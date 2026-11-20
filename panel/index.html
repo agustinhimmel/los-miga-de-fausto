@@ -122,14 +122,12 @@ details .dos{margin-top:8px}
   .nav button:hover{background:var(--pan);color:var(--tinta)}
   .nav button[aria-current="page"]{background:var(--rojo-suave)}
   .nav .globo{position:static;margin-left:auto}
-  #v-inicio,#lista-pedidos{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px;align-items:start}
-  #v-inicio > .aviso{grid-column:1/-1;max-width:520px}
-  #v-inicio > .tarjeta,#lista-pedidos > .tarjeta{margin:0;padding:22px}
+  #lista-pedidos{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px;align-items:start}
+  #lista-pedidos > .tarjeta{margin:0;padding:22px}
   #lista-pedidos > .vacio{grid-column:1/-1}
   .chips{flex-wrap:wrap;overflow:visible;margin:0 0 18px;padding:0}
   .chips button{font-size:15px;padding:10px 18px}
   .chips button:hover{border-color:var(--tinta)}
-  #v-pronto .tarjeta{max-width:620px;padding:28px}
   .boton{transition:filter .15s}.boton:hover:not(:disabled){filter:brightness(1.08)}
 }
 .vacio{text-align:center;color:var(--tinta2);padding:28px 8px}
@@ -185,18 +183,16 @@ details .dos{margin-top:8px}
       <div class="chips" id="filtro"></div>
       <div id="lista-pedidos"></div>
     </section>
-    <section id="v-pronto" hidden>
-      <div class="tarjeta"><h2 id="pronto-t"></h2><p class="chica" id="pronto-d"></p></div>
-    </section>
+    <section id="v-extra" hidden></section>
   </main>
 </div>
 
 <nav class="nav" id="nav" hidden><div>
   <button type="button" data-ir="inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Inicio</button>
   <button type="button" data-ir="pedidos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg>Pedidos<span class="globo" id="globo" hidden></span></button>
-  <button type="button" data-ir="recetas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM9 9h6M9 13h4"/></svg>Recetas</button>
+  <button type="button" data-ir="productos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2zM9 7V5a3 3 0 0 1 6 0v2"/></svg>Productos</button>
   <button type="button" data-ir="stock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></svg>Stock</button>
-  <button type="button" data-ir="numeros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Números</button>
+  <button type="button" data-ir="estadisticas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Estadísticas</button>
 </div></nav>
 
 <script>
@@ -225,7 +221,8 @@ details .dos{margin-top:8px}
       headers:{apikey:BASE.clave,Authorization:"Bearer "+S.a,"Content-Type":"application/json",Prefer:opt.metodo==="PATCH"?"return=minimal":"return=representation"}})};
     var antes=S.v-Date.now()<60000?renovar():Promise.resolve();
     return antes.then(ir).then(function(r){if(r.status===401)return renovar().then(ir);return r})
-      .then(function(r){if(!r.ok)throw new Error("La base contestó "+r.status);return r.status===204||r.status===201?null:r.json()})}
+      .then(function(r){if(!r.ok)return r.json().catch(function(){return {}}).then(function(j){var e=new Error("La base contestó "+r.status);if(j&&j.code==="P0001")e.dicho=j.message;else if(j&&j.code==="23505")e.dicho="Ya existe uno con ese nombre.";throw e});
+        return r.status===204?null:r.text().then(function(t){return t?JSON.parse(t):null})})}
 
   /* ---------- datos ---------- */
   var pedidos=[],contenido={},productos={},dias={},vista="inicio",filtro="proximos",listo=false;
@@ -237,15 +234,15 @@ details .dos{margin-top:8px}
   function vivo(p){return p.estado!=="cancelado"}
 
   function traer(){
-    var desde=masDias(hoy(),-45);
+    var desde=masDias(hoy(),-400);
     return Promise.all([
       llamar("pedidos?select=*,pedido_renglones(*)&fecha_entrega=gte."+desde+"&order=fecha_entrega.asc,numero.asc"),
-      llamar("producto_contenido?select=*"),llamar("productos?select=id,nombre,tipo,pestana,orden"),llamar("dias_entrega?select=*")
+      llamar("producto_contenido?select=*"),llamar("productos?select=*"),llamar("dias_entrega?select=*")
     ]).then(function(r){
       pedidos=r[0];contenido={};productos={};dias={};
       r[1].forEach(function(c){(contenido[c.producto_id]=contenido[c.producto_id]||[]).push(c)});
       r[2].forEach(function(p){productos[p.id]=p});r[3].forEach(function(d){dias[d.fecha]=d});
-      listo=true;$("falla").hidden=true;pintar();reparto();
+      return (window.MIGA&&MIGA.cargar?MIGA.cargar():Promise.resolve()).then(function(){listo=true;$("falla").hidden=true;pintar();reparto()});
     }).catch(function(e){if(S){$("falla").hidden=false;$("falla").textContent="No pudimos traer los pedidos. Revisá la conexión."}})}
 
   /* cuánto hay que hacer de cada gusto, y qué más hay que tener */
@@ -315,15 +312,15 @@ details .dos{margin-top:8px}
       (a.fecha_entrega.localeCompare(b.fecha_entrega)||a.numero-b.numero)}); /* sin reordenar por estado: que las tarjetas no salten al tocar */
     $("lista-pedidos").innerHTML=l.length?l.map(tarjeta).join(""):'<p class="vacio">'+(filtro==="proximos"?"No hay pedidos por hacer. 🎉":"No hay pedidos acá.")+'</p>'}
 
-  var PRONTO={recetas:["Recetas","Acá vas a cargar qué lleva cada sándwich y cuántos gramos. Con eso el sistema calcula solo cuánto te cuesta cada uno. Viene en el próximo paso."],
-    stock:["Stock","Acá vas a anotar lo que comprás, y el sistema te va a decir cuánto te queda y para cuántos sándwiches te alcanza. Viene después de las recetas."],
-    numeros:["Números","Acá vas a ver cuánto ganás con cada sándwich, las ventas por categoría y el ranking de lo que más se vende. Viene después de recetas y stock."]};
   function pintar(){if(!listo)return;
     var n=pedidos.filter(function(p){return p.estado==="nuevo"}).length;$("globo").hidden=!n;$("globo").textContent=n;
     document.querySelectorAll("[data-ir]").forEach(function(b){if(b.closest(".nav"))b.setAttribute("aria-current",b.dataset.ir===vista?"page":"false")});
-    $("v-inicio").hidden=vista!=="inicio";$("v-pedidos").hidden=vista!=="pedidos";$("v-pronto").hidden=!PRONTO[vista];
-    if(vista==="inicio")pintarInicio();else if(vista==="pedidos")pintarPedidos();
-    else{$("pronto-t").textContent=PRONTO[vista][0];$("pronto-d").textContent=PRONTO[vista][1]}}
+    var ex=window.MIGA&&MIGA.vistas[vista];
+    $("v-inicio").hidden=!!ex||vista!=="inicio";$("v-pedidos").hidden=vista!=="pedidos";$("v-extra").hidden=!ex;
+    if(ex)ex($("v-extra"));else if(vista==="inicio")pintarInicio();else if(vista==="pedidos")pintarPedidos()}
+  /* lo que usan las pantallas de gestión (diseno/panel-gestion.html) */
+  window.MIGA={$:$,esc:esc,plata:plata,hoy:hoy,masDias:masDias,fechaCorta:fechaCorta,llamar:llamar,produccion:produccion,vistas:{},
+    datos:function(){return {pedidos:pedidos,contenido:contenido,productos:productos,dias:dias}},pintar:function(){pintar()},traer:function(){return traer()}};
 
   function cambiar(id,cambio){var p=pedidos.filter(function(x){return x.id===id})[0];if(!p)return;
     var antes={};Object.keys(cambio).forEach(function(k){antes[k]=p[k];p[k]=cambio[k]});pintar();reparto();
@@ -446,5 +443,374 @@ details .dos{margin-top:8px}
   if(!desdeMail()){if(S&&S.a)adentro();else afuera()}
 })();
 </script>
+<!-- Gestión del negocio: Inicio, Productos, Stock y Estadísticas. armar-sitio.py lo mete dentro del panel. -->
+<style>
+.g-titulo{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.g-titulo > *{min-width:0;max-width:100%}
+#v-extra{min-width:0;max-width:100%}
+#v-extra .chips{max-width:100%}
+.g-titulo h2{font-size:26px}
+.g-titulo p{margin:4px 0 0}
+.g-grid{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--papel);border:1px solid var(--linea);border-radius:16px;padding:14px;min-width:0}
+.kpi span{display:block;font-size:12px;font-weight:600;color:var(--tinta2);text-transform:uppercase;letter-spacing:.04em}
+.kpi b{display:block;font-family:var(--display);font-size:26px;line-height:1.15;margin-top:4px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.kpi small{display:block;font-size:12px;color:var(--tinta2);margin-top:2px}
+.kpi small.sube{color:var(--verde);font-weight:600}.kpi small.baja{color:var(--rojo);font-weight:600}
+.kpi.alerta{background:var(--ambar-suave);border-color:transparent}.kpi.alerta b,.kpi.alerta span{color:var(--ambar)}
+.tabla{width:100%;border-collapse:collapse;font-size:14px}
+.tabla th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--tinta2);font-weight:600;text-align:left;padding:8px 8px 8px 0;border-top:0;border-bottom:1px solid var(--linea);white-space:nowrap}
+.tabla td{padding:10px 8px 10px 0;border-top:0;border-bottom:1px solid var(--linea);vertical-align:middle}
+.tabla tr:last-child td{border-bottom:0}
+.tabla .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tabla th.num{text-align:right}
+.tabla td:last-child,.tabla th:last-child{padding-right:0}
+.tabla tr.fila-clic{cursor:pointer}
+.tabla tr.fila-clic:hover td{background:var(--pan)}
+.tabla .apagado{opacity:.5}
+.rueda{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.pill.bien{background:var(--verde-suave);color:var(--verde)}.pill.medio{background:var(--ambar-suave);color:var(--ambar)}.pill.mal{background:var(--rojo-suave);color:var(--rojo)}.pill.gris{background:var(--pan);color:var(--tinta2)}
+.g-form{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;margin-top:12px}
+.g-form .campo{margin:0}
+.g-form .ancho{grid-column:1/-1}
+.g-form select,.g-in{border:1px solid var(--linea);background:var(--pan);border-radius:10px;padding:10px;width:100%;font:inherit;color:inherit}
+.g-in.chico{width:92px;padding:7px 8px;text-align:right}
+.g-acc{display:flex;gap:8px;flex-wrap:wrap}
+.g-acc .boton{width:auto;padding:10px 16px;font-size:14px}
+.mini{background:none;border:1px solid var(--linea);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--tinta)}
+.mini:hover{border-color:var(--tinta)}.mini.rojo{color:var(--rojo)}
+.volver-g{background:none;border:0;padding:0;font-weight:700;color:var(--rojo);cursor:pointer;font-size:15px;margin-bottom:10px}
+.barras-h{display:grid;gap:8px}
+.bh{display:grid;grid-template-columns:minmax(90px,34%) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:14px}
+.bh .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bh .b{height:10px;background:var(--pan);border-radius:99px;overflow:hidden}
+.bh .b i{display:block;height:100%;background:var(--rojo);border-radius:99px;min-width:3px}
+.bh .v{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.bh .v small{font-weight:400;color:var(--tinta2);margin-left:4px}
+.partes{display:flex;height:14px;border-radius:99px;overflow:hidden;gap:2px;background:var(--papel)}
+.partes i{display:block;height:100%;min-width:3px}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;margin-top:10px;color:var(--tinta2)}
+.leyenda span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px}
+.leyenda b{color:var(--tinta);font-variant-numeric:tabular-nums}
+.graf{width:100%;height:auto;display:block;overflow:visible}
+.graf text{font:11px var(--texto);fill:var(--tinta2)}
+.graf .eje{stroke:var(--linea);stroke-width:1}
+.graf rect.d{fill:var(--rojo)}
+.graf rect.d:hover{filter:brightness(1.2)}
+.graf rect.z{fill:transparent}
+#g-tip{position:fixed;z-index:50;pointer-events:none;background:var(--tinta);color:var(--pan);font-size:12px;font-weight:600;padding:6px 9px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-130%)}
+.demo-aviso{background:var(--ambar-suave);color:var(--ambar);border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.lista-alertas{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+.lista-alertas li{display:flex;gap:10px;align-items:baseline}
+.switch{position:relative;display:inline-block;width:42px;height:24px;flex:none}
+.switch input{opacity:0;width:100%;height:100%;position:absolute;inset:0;margin:0;cursor:pointer;z-index:1}
+.switch i{position:absolute;inset:0;background:var(--linea);border-radius:99px;transition:background .15s}
+.switch i::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked + i{background:var(--verde)}
+.switch input:checked + i::after{transform:translateX(18px)}
+.subtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.g-nota{font-size:12px;color:var(--tinta2);margin:8px 0 0}
+@media (min-width:900px){
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+  .kpi{padding:18px}.kpi b{font-size:30px}
+  .g-grid{gap:18px}
+  .g-grid.dos{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g-grid.tres{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+  .g-grid > .tarjeta{margin:0;padding:22px}
+  .g-grid > .ancho{grid-column:1/-1}
+  .g-titulo h2{font-size:32px}
+  .g-form{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .tabla{font-size:15px}
+}
+</style>
+<script>
+(function(){
+  var M=window.MIGA,$=M.$,esc=M.esc,plata=M.plata;
+  var ins=[],porId={},formula={},receta={},compras=[],prods=[];
+  var est={prod:null,tab:"insumos",periodo:30,demo:false,form:null,insumo:null},forzar=true;
+  var CAT={clasicos:"Clásicos",especiales:"Especiales",combos:"Combos",picadas:"Picadas",bebidas:"Bebidas"},CATS=["clasicos","especiales","combos","picadas","bebidas"];
+  var DSEM=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  var nro=function(v,d){return (+v).toLocaleString("es-AR",{maximumFractionDigits:d==null?0:d,minimumFractionDigits:0})};
+  var pct=function(v){return v==null||!isFinite(v)?"—":Math.round(v*100)+"%"};
+  function cant(q,u){q=+q;return u==="g"?(Math.abs(q)>=1000?nro(q/1000,2)+" kg":nro(q,0)+" g"):u==="ml"?(Math.abs(q)>=1000?nro(q/1000,2)+" L":nro(q,0)+" ml"):nro(q,1)+" un"}
+  function porUnidad(i){var c=costoUnit(i);if(c==null)return "—";return i.unidad==="un"?plata(c)+" c/u":plata(c*1000)+(i.unidad==="g"?" el kg":" el litro")}
+
+  M.cargar=function(){return Promise.all([M.llamar("insumos?select=*&order=nombre"),M.llamar("insumo_formula?select=*"),M.llamar("producto_receta?select=*"),
+      M.llamar("compras?select=*&order=fecha.desc,id.desc&limit=80"),M.llamar("producciones?select=*&order=fecha.desc,id.desc&limit=80")]).then(function(r){
+    ins=r[0];porId={};ins.forEach(function(i){porId[i.id]=i});formula={};r[1].forEach(function(f){(formula[f.preparacion_id]=formula[f.preparacion_id]||[]).push(f)});
+    receta={};r[2].forEach(function(x){(receta[x.producto_id]=receta[x.producto_id]||[]).push(x)});compras=r[3];prods=r[4]})};
+
+  /* ---------- cuentas ---------- */
+  function costoUnit(i,prof){if(!i)return null;prof=prof||0;
+    if(!i.es_preparacion)return i.precio_compra>0&&i.cantidad_compra>0?i.precio_compra/i.cantidad_compra:null;
+    var f=formula[i.id]||[];if(!f.length||!(i.rendimiento>0)||prof>4)return null;var t=0;
+    for(var k=0;k<f.length;k++){var c=costoUnit(porId[f[k].insumo_id],prof+1);if(c==null)return null;t+=c*f[k].cantidad}return t/i.rendimiento}
+  function productos(){var p=M.datos().productos;return Object.keys(p).map(function(k){return p[k]}).sort(function(a,b){return a.orden-b.orden})}
+  function costoProd(p){if(!p)return null;
+    if(p.tipo==="combo"){var c=M.datos().contenido[p.id]||[];if(!c.length)return null;var t=0;
+      for(var k=0;k<c.length;k++){var g=costoProd(M.datos().productos[c[k].gusto_id]);if(g==null)return null;t+=g*c[k].cantidad}return t}
+    var r=receta[p.id]||[];if(!r.length)return null;var s=0;
+    for(var j=0;j<r.length;j++){var u=costoUnit(porId[r[j].insumo_id]);if(u==null)return null;s+=u*r[j].cantidad}return s/(p.rinde||1)}
+  function crudo(id,q,acc,prof){var i=porId[id];if(!i||(prof||0)>4)return;
+    if(i.es_preparacion)(formula[i.id]||[]).forEach(function(f){crudo(f.insumo_id,f.cantidad*q/(i.rendimiento||1),acc,(prof||0)+1)});else acc[id]=(acc[id]||0)+q}
+  function necesita(p){var a={};(receta[p.id]||[]).forEach(function(x){crudo(x.insumo_id,+x.cantidad,a)});return a}
+  function alcanza(p){var n=necesita(p),min=Infinity,lim=null;Object.keys(n).forEach(function(k){var s=Math.max(0,+porId[k].stock)/n[k];if(s<min){min=s;lim=porId[k]}});
+    return {armadas:isFinite(min)?Math.floor(min):0,limite:lim}}
+  function margen(p){var c=costoProd(p);return c==null||!p.precio?null:(p.precio-c)/p.precio}
+  function pillMargen(m){return m==null?'<span class="pill gris">sin costo</span>':'<span class="pill '+(m>=.55?"bien":m>=.4?"medio":"mal")+'">'+pct(m)+'</span>'}
+
+  /* ---------- ventas ---------- */
+  function diaAR(iso){return new Date(iso).toLocaleDateString("en-CA",{timeZone:"America/Argentina/Buenos_Aires"})}
+  var DEMO=null;
+  function ejemplo(){if(DEMO)return DEMO;var s=7,al=function(){s=(s*16807)%2147483647;return s/2147483647},ps=productos().filter(function(p){return p.activo}),H=M.hoy(),l=[],n=500;
+    var nombres=["Carla","Juan","Marta","Nico","Sofía","Pablo","Lucía","Diego","Flor","Tomás","Vale","Seba"],peso={jq:9,jqt:5,jqh:4,po:4,be:2,te:3,vt:3,c12:7,c12s:5,c12e:3,c24:2,c6:3,pic4:2,pic2:1,heineken:3,corona:2,gas:4,"six-heineken":2,previa:2};
+    for(var d=59;d>=0;d--){var f=M.masDias(H,-d),dw=new Date(f+"T12:00:00").getDay(),cuantos=Math.floor(al()*(dw===5||dw===6?5:dw===4?3:1.6));
+      for(var k=0;k<cuantos;k++){var r=[],tot=0,sand=0,veces=1+Math.floor(al()*3);
+        for(var v=0;v<veces;v++){var sum=0;ps.forEach(function(p){sum+=peso[p.id]||1});var x=al()*sum,e=ps[0];for(var q=0;q<ps.length;q++){x-=peso[ps[q].id]||1;if(x<=0){e=ps[q];break}}
+          var c=e.tipo==="gusto"?6*(1+Math.floor(al()*4)):1+Math.floor(al()*2);r.push({id:n*10+v,producto_id:e.id,nombre:e.nombre,cantidad:c,precio:e.precio,sandwiches:c*e.sandwiches});tot+=c*e.precio;sand+=c*e.sandwiches}
+        var nom=nombres[Math.floor(al()*nombres.length)];
+        l.push({id:"demo"+n,numero:n++,creado:f+"T15:00:00-03:00",fecha_entrega:M.masDias(f,1+Math.floor(al()*3)),nombre:nom,telefono:"11 5555 "+(1000+nombres.indexOf(nom)),entrega:al()<.6?"retiro":"envio",
+          pago:al()<.65?"transferencia":"efectivo",estado:d>2?"entregado":"confirmado",cobrado:d>2||al()<.5,sandwiches:sand,bruto:tot,descuento:0,total:tot,pedido_renglones:r})}}
+    return DEMO=l}
+  function ventas(){return (est.demo?ejemplo():M.datos().pedidos).filter(function(p){return p.estado!=="cancelado"})}
+  function enRango(l,desde,hasta){return l.filter(function(p){var d=diaAR(p.creado);return d>=desde&&d<=hasta})}
+  function resumen(l){var r={total:0,n:l.length,sand:0,costo:0,sinCosto:0,cobrado:0,desc:0};
+    l.forEach(function(p){r.total+=p.total;r.sand+=p.sandwiches;r.desc+=p.descuento||0;if(p.cobrado)r.cobrado+=p.total;
+      p.pedido_renglones.forEach(function(x){var c=costoProd(M.datos().productos[x.producto_id]);if(c==null)r.sinCosto+=x.cantidad*x.precio;else r.costo+=c*x.cantidad})});
+    r.ticket=r.n?r.total/r.n:0;r.ganancia=r.total-r.sinCosto-r.costo;r.margen=r.total-r.sinCosto>0?r.ganancia/(r.total-r.sinCosto):null;return r}
+
+  /* ---------- piezas ---------- */
+  function kpi(t,v,sub,cls,subcls){return '<div class="kpi'+(cls?" "+cls:"")+'"><span>'+t+'</span><b>'+v+'</b>'+(sub?'<small'+(subcls?' class="'+subcls+'"':"")+'>'+sub+'</small>':"")+'</div>'}
+  function delta(a,b){if(!b)return ["sin datos del período anterior",""];var d=(a-b)/b;return [(d>=0?"▲ ":"▼ ")+Math.abs(Math.round(d*100))+"% contra el período anterior",d>=0?"sube":"baja"]}
+  function barrasH(items,fmt,vacio){if(!items.length)return '<p class="chica">'+(vacio||"Todavía no hay datos.")+'</p>';var max=Math.max.apply(null,items.map(function(i){return i.v}))||1;
+    return '<div class="barras-h">'+items.map(function(i){return '<div class="bh"><span class="n" title="'+esc(i.n)+'">'+esc(i.n)+'</span><span class="b"><i style="width:'+Math.max(2,100*i.v/max)+'%"></i></span><span class="v">'+fmt(i.v)+(i.x?'<small>'+i.x+'</small>':"")+'</span></div>'}).join("")+'</div>'}
+  function grafDias(serie){var W=720,Hh=200,izq=44,ab=22,arr=10,max=Math.max.apply(null,serie.map(function(s){return s.v}))||1;
+    var pot=Math.pow(10,Math.floor(Math.log10(max))),tope=Math.ceil(max/pot)*pot;if(tope/pot>5)tope=Math.ceil(max/(pot*2))*pot*2;
+    var aw=(W-izq)/serie.length,bw=Math.max(3,Math.min(24,aw-2)),h='<svg class="graf" viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Ventas por día">';
+    for(var g=0;g<=2;g++){var y=arr+(Hh-ab-arr)*(1-g/2);h+='<line class="eje" x1="'+izq+'" x2="'+W+'" y1="'+y+'" y2="'+y+'"/><text x="'+(izq-6)+'" y="'+(y+4)+'" text-anchor="end">'+(g?"$"+nro(tope*g/2/1000,0)+"k":"0")+'</text>'}
+    var cada=Math.ceil(serie.length/8);
+    serie.forEach(function(s,k){var x=izq+k*aw+(aw-bw)/2,bh=(Hh-ab-arr)*s.v/tope,y=Hh-ab-bh;
+      if(s.v>0)h+='<rect class="d" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="'+Math.min(4,bw/2)+'"/>';
+      h+='<rect class="z" data-tip="'+esc(M.fechaCorta(s.f)+" · "+plata(s.v)+" · "+s.n+(s.n===1?" pedido":" pedidos"))+'" x="'+(izq+k*aw).toFixed(1)+'" y="0" width="'+aw.toFixed(1)+'" height="'+(Hh-ab)+'"/>';
+      if(k%cada===0)h+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(Hh-6)+'" text-anchor="middle">'+s.f.slice(8)+"/"+(+s.f.slice(5,7))+'</text>'});
+    return h+'</svg>'}
+  function partes(lista){var t=lista.reduce(function(a,b){return a+b.v},0)||1;
+    return '<div class="partes">'+lista.map(function(x){return x.v?'<i style="width:'+100*x.v/t+'%;background:'+x.c+'" title="'+esc(x.n)+'"></i>':""}).join("")+'</div><div class="leyenda">'+
+      lista.map(function(x){return '<span style="--c:'+x.c+'">'+esc(x.n)+' <b>'+(x.f||pct(x.v/t))+'</b></span>'}).join("")+'</div>'}
+
+  /* =================== INICIO =================== */
+  M.vistas.inicio=function(el){var H=M.hoy(),ped=M.datos().pedidos,vivos=ped.filter(function(p){return p.estado!=="cancelado"}),dias=M.datos().dias;
+    var nuevos=ped.filter(function(p){return p.estado==="nuevo"}).length,hoyEnt=vivos.filter(function(p){return p.fecha_entrega===H&&p.estado!=="entregado"}).length;
+    var mes=enRango(vivos,H.slice(0,8)+"01",H),rm=resumen(mes),porCobrar=vivos.filter(function(p){return !p.cobrado}).reduce(function(a,p){return a+p.total},0);
+    var h='<div class="g-titulo"><div><h2>Hola 👋</h2><p class="chica">'+new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"})+'</p></div></div><div class="kpis">'+
+      kpi("Para confirmar",nuevos,nuevos?"Tocá para verlos":"Estás al día",nuevos?"alerta":"")+kpi("Entregas de hoy",hoyEnt,hoyEnt?"pendientes":"nada pendiente")+
+      kpi("Ventas del mes",plata(rm.total),rm.n+(rm.n===1?" pedido":" pedidos"))+kpi("Ganancia estimada",plata(rm.ganancia),rm.margen==null?"cargá costos para verla":"margen "+pct(rm.margen))+
+      kpi("Falta cobrar",plata(porCobrar),"de pedidos sin marcar cobrado")+'</div>';
+    var serie=[];for(var d=13;d>=0;d--){var f=M.masDias(H,-d),l=enRango(vivos,f,f);serie.push({f:f,v:l.reduce(function(a,p){return a+p.total},0),n:l.length})}
+    h+='<div class="g-grid tres"><div class="tarjeta"><h2>Ventas de los últimos 14 días</h2>'+(serie.some(function(s){return s.v})?grafDias(serie):'<p class="chica">Todavía no entraron pedidos. Cuando entren, vas a ver acá cómo viene la venta día por día.</p>')+'</div>';
+    /* alertas */
+    var al=[],bajos=ins.filter(function(i){return !i.es_preparacion&&i.activo&&+i.stock_minimo>0&&+i.stock<+i.stock_minimo});
+    bajos.slice(0,5).forEach(function(i){al.push('<li><span class="pill mal">Stock bajo</span><span>'+esc(i.nombre)+": quedan "+cant(i.stock,i.unidad)+'</span></li>')});
+    productos().filter(function(p){return p.activo&&p.tipo!=="extra"}).forEach(function(p){var m=margen(p);
+      if(m==null)al.push('<li><span class="pill gris">Sin costo</span><span>'+esc(p.nombre)+': falta cargar su receta</span></li>');
+      else if(m<.4)al.push('<li><span class="pill medio">Margen bajo</span><span>'+esc(p.nombre)+": deja "+pct(m)+'</span></li>')});
+    h+='<div class="tarjeta"><h2>Para mirar</h2>'+(al.length?'<ul class="lista-alertas">'+al.slice(0,8).join("")+'</ul>':'<p class="chica">Todo en orden: costos cargados, márgenes sanos y stock por encima del mínimo.</p>')+'</div></div>';
+    /* próximas entregas con producción y qué falta comprar */
+    var prox={};vivos.forEach(function(p){if(p.fecha_entrega>=H&&p.estado!=="entregado")(prox[p.fecha_entrega]=prox[p.fecha_entrega]||[]).push(p)});
+    var fechas=Object.keys(prox).sort();
+    h+='<div class="g-titulo" style="margin-top:22px"><h2>Próximas entregas</h2></div>';
+    if(!fechas.length)h+='<div class="tarjeta"><p class="chica">No hay pedidos para los próximos días.</p></div>';
+    var todos=[];fechas.forEach(function(f){todos=todos.concat(prox[f])});
+    if(todos.length){var pr=M.produccion(todos),nec={};pr.gustos.forEach(function(g){var p=M.datos().productos[g.id],n=necesita(p||{}),arm=Math.ceil(g.c/((p||{}).rinde||6));Object.keys(n).forEach(function(k){nec[k]=(nec[k]||0)+n[k]*arm})});
+      var falta=Object.keys(nec).map(function(k){return {i:porId[k],q:nec[k],f:nec[k]-Math.max(0,+porId[k].stock)}}).filter(function(x){return x.f>0}).sort(function(a,b){return a.i.nombre.localeCompare(b.i.nombre)});
+      var hayStock=ins.some(function(i){return +i.stock>0});
+      h+='<div class="g-grid dos"><div class="tarjeta ancho"><h2>Lista de compras para todo lo pedido</h2>'+(!Object.keys(nec).length?'<p class="chica">Cargá las recetas para ver qué hace falta comprar.</p>':
+        !hayStock?'<p class="chica" style="margin-bottom:10px">Todavía no cargaste stock, así que te muestro todo lo que hace falta. Cuando anotes tus compras en Stock, acá queda solo lo que te falta.</p>':"")+
+        (falta.length?'<div class="rueda"><table class="tabla"><tr><th>Insumo</th><th class="num">Hace falta</th><th class="num">Tenés</th><th class="num">Comprar</th></tr>'+falta.map(function(x){
+          return '<tr><td>'+esc(x.i.nombre)+'</td><td class="num">'+cant(x.q,x.i.unidad)+'</td><td class="num">'+cant(Math.max(0,x.i.stock),x.i.unidad)+'</td><td class="num"><b>'+cant(x.f,x.i.unidad)+'</b></td></tr>'}).join("")+'</table></div>':
+          Object.keys(nec).length?'<p class="chica">Con el stock que tenés alcanza para todo lo pedido. 🎉</p>':"")+'</div>'}
+    fechas.forEach(function(f){var l=prox[f],s=0,t=0;l.forEach(function(p){s+=p.sandwiches;t+=p.total});var pr2=M.produccion(l);
+      h+='<div class="tarjeta"><div class="dia-cab"><h2>'+(f===H?"Hoy · ":"")+M.fechaCorta(f)+((dias[f]||{}).etiqueta?" · "+esc(dias[f].etiqueta):"")+'</h2><small>'+l.length+(l.length===1?" pedido":" pedidos")+" · "+s+" sándwiches · "+plata(t)+'</small></div>'+
+        '<table class="tabla" style="margin-top:10px"><tr><th>Para producir</th><th class="num">Sándwiches</th><th class="num">Armadas</th></tr>'+pr2.gustos.map(function(g){return "<tr><td>"+esc(g.n)+'</td><td class="num">'+g.c+'</td><td class="num">'+Math.ceil(g.c/6)+"</td></tr>"}).join("")+"</table>"+
+        (pr2.extras.length?'<table class="tabla" style="margin-top:8px"><tr><th>Además hay que tener</th><th class="num">Cantidad</th></tr>'+pr2.extras.map(function(g){return "<tr><td>"+esc(g.n)+'</td><td class="num">'+g.c+"</td></tr>"}).join("")+"</table>":"")+
+        '<button type="button" class="boton suave" style="margin-top:12px" data-dia="'+f+'">Ver los pedidos de este día</button></div>'});
+    if(todos.length)h+='</div>';
+    el.innerHTML=h;var k=el.querySelector(".kpi.alerta");if(k){k.style.cursor="pointer";k.setAttribute("data-ir","pedidos")}};
+
+  /* =================== PRODUCTOS =================== */
+  function vendidos(id){var u=0;M.datos().pedidos.forEach(function(p){if(p.estado!=="cancelado")p.pedido_renglones.forEach(function(r){if(r.producto_id===id)u+=r.cantidad})});return u}
+  function editorComp(filas,tipo,dueno,unidadPor){var total=0;filas.forEach(function(x){var u=costoUnit(porId[x.insumo_id]);if(u!=null)total+=u*x.cantidad});
+    var h='<div class="rueda"><table class="tabla"><tr><th>Ingrediente</th><th class="num">'+unidadPor+'</th><th class="num">Costo</th><th class="num">Peso</th><th></th></tr>';
+    filas.slice().sort(function(a,b){var ca=(costoUnit(porId[a.insumo_id])||0)*a.cantidad,cb=(costoUnit(porId[b.insumo_id])||0)*b.cantidad;return cb-ca}).forEach(function(x){var i=porId[x.insumo_id]||{nombre:"?",unidad:""},u=costoUnit(i),c=u==null?null:u*x.cantidad;
+      h+='<tr><td>'+esc(i.nombre)+(i.es_preparacion?' <span class="pill gris">preparación</span>':"")+'</td><td class="num"><input class="g-in chico" inputmode="decimal" value="'+(+x.cantidad)+'" data-comp="'+tipo+'" data-dueno="'+esc(dueno)+'" data-ins="'+x.insumo_id+'" aria-label="Cantidad de '+esc(i.nombre)+'"> '+i.unidad+
+        '</td><td class="num">'+(c==null?"—":plata(c))+'</td><td class="num">'+(c==null||!total?"—":pct(c/total))+'</td><td class="num"><button type="button" class="mini rojo" data-quitar="'+tipo+'" data-dueno="'+esc(dueno)+'" data-ins="'+x.insumo_id+'" aria-label="Quitar '+esc(i.nombre)+'">Quitar</button></td></tr>'});
+    h+='</table></div>';var usados={};filas.forEach(function(x){usados[x.insumo_id]=1});
+    var op=ins.filter(function(i){return i.activo&&!usados[i.id]&&String(i.id)!==String(dueno)&&(tipo==="receta"||!i.es_preparacion)});
+    h+='<form class="g-form" data-agrega="'+tipo+'" data-dueno="'+esc(dueno)+'"><div class="campo ancho" style="grid-column:span 2"><label>Agregar ingrediente</label><select name="ins" required><option value="">Elegí…</option>'+
+      op.map(function(i){return '<option value="'+i.id+'">'+esc(i.nombre)+" ("+i.unidad+")"+(i.es_preparacion?" · preparación":"")+'</option>'}).join("")+'</select></div>'+
+      '<div class="campo"><label>Cantidad</label><input class="g-in" name="q" inputmode="decimal" required></div><button class="boton" type="submit">Agregar</button></form>';
+    return {html:h,total:total}}
+  M.vistas.productos=function(el){var ps=productos();
+    if(est.prod&&!M.datos().productos[est.prod])est.prod=null;
+    if(!est.prod){var con=ps.filter(function(p){return margen(p)!=null}),prom=con.length?con.reduce(function(a,p){return a+margen(p)},0)/con.length:null;
+      var h='<div class="g-titulo"><div><h2>Productos</h2><p class="chica">Tocá uno para ver su ficha: precio, costo, de qué está hecho y cuánto deja.</p></div></div><div class="kpis">'+
+        kpi("Productos activos",ps.filter(function(p){return p.activo}).length,"de "+ps.length+" cargados")+kpi("Margen promedio",pct(prom),"de los que tienen costo")+
+        kpi("Sin costo cargado",ps.filter(function(p){return costoProd(p)==null}).length,"sobre todo picadas y bebidas")+'</div>';
+      CATS.forEach(function(c){var l=ps.filter(function(p){return p.pestana===c});if(!l.length)return;
+        h+='<div class="tarjeta"><h2>'+CAT[c]+'</h2><div class="rueda"><table class="tabla"><tr><th>Producto</th><th class="num">Precio</th><th class="num">Costo</th><th class="num">Deja</th><th class="num">Margen</th><th class="num">Vendidos</th><th class="num">A la venta</th></tr>'+
+          l.map(function(p){var co=costoProd(p),m=margen(p);return '<tr class="fila-clic'+(p.activo?"":" apagado")+'" data-prodficha="'+esc(p.id)+'"><td><b>'+esc(p.nombre)+'</b></td><td class="num">'+plata(p.precio)+'</td><td class="num">'+(co==null?"—":plata(co))+
+            '</td><td class="num">'+(co==null?"—":plata(p.precio-co))+'</td><td class="num">'+pillMargen(m)+'</td><td class="num">'+vendidos(p.id)+'</td><td class="num"><span class="pill '+(p.activo?"bien":"gris")+'">'+(p.activo?"Sí":"No")+'</span></td></tr>'}).join("")+'</table></div></div>'});
+      el.innerHTML=h;return}
+    var p=M.datos().productos[est.prod],co=costoProd(p),m=margen(p),esGusto=p.tipo==="gusto",h2='<button type="button" class="volver-g" data-prodficha="">← Todos los productos</button>'+
+      '<div class="g-titulo"><div><h2>'+esc(p.nombre)+'</h2><p class="chica">'+CAT[p.pestana]+(p.tipo==="combo"?" · combo":p.tipo==="extra"?" · se revende":" · se vende por unidad")+'</p></div>'+
+      '<label style="display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px"><span class="switch"><input type="checkbox" data-activo="'+esc(p.id)+'"'+(p.activo?" checked":"")+'><i></i></span>'+(p.activo?"A la venta en la tienda":"Oculto en la tienda")+'</label></div>'+
+      '<div class="kpis">'+kpi("Precio de venta",plata(p.precio))+kpi("Costo",co==null?"—":plata(co),co==null?"falta cargarlo":esGusto?"por sándwich":"por unidad")+kpi("Deja por venta",co==null?"—":plata(p.precio-co))+
+      kpi("Margen",pct(m),m==null?"":m>=.55?"sano":m>=.4?"justo":"bajo: revisá el precio",m!=null&&m<.4?"alerta":"")+kpi("Vendidos",vendidos(p.id),"en total")+'</div><div class="g-grid dos">';
+    /* precio */
+    h2+='<div class="tarjeta"><h2>Precio</h2><form class="g-form" data-precio="'+esc(p.id)+'" style="grid-template-columns:minmax(0,1fr) auto"><div class="campo"><label for="g-precio">Precio de venta ($)</label><input class="g-in" id="g-precio" name="precio" inputmode="numeric" value="'+p.precio+'" required></div><button class="boton" type="submit">Guardar precio</button></form>'+
+      (co!=null?'<p class="g-nota">Precio sugerido según cuánto querés que te deje:</p><div class="g-acc" style="margin-top:8px">'+[.5,.6,.65,.7].map(function(o){var s=Math.ceil(co/(1-o)/50)*50;return '<button type="button" class="mini" data-sugerido="'+s+'">'+pct(o)+": "+plata(s)+'</button>'}).join("")+'</div><p class="g-nota">Al guardar, el precio cambia en la tienda al instante.</p>':'<p class="g-nota">Cuando cargues el costo, acá te sugiero precios según el margen que busques.</p>')+'</div>';
+    /* de dónde sale el costo */
+    if(p.tipo==="combo"){var cont=M.datos().contenido[p.id]||[],sueltos=0;cont.forEach(function(c){sueltos+=(M.datos().productos[c.gusto_id]||{precio:0}).precio*c.cantidad});
+      h2+='<div class="tarjeta"><h2>Qué trae</h2><table class="tabla"><tr><th>Gusto</th><th class="num">Cantidad</th><th class="num">Costo</th></tr>'+cont.map(function(c){var g=M.datos().productos[c.gusto_id],cg=costoProd(g);
+        return '<tr><td>'+esc(g?g.nombre:c.gusto_id)+'</td><td class="num">'+c.cantidad+'</td><td class="num">'+(cg==null?"—":plata(cg*c.cantidad))+'</td></tr>'}).join("")+'</table>'+
+        '<p class="g-nota">Sueltos, estos sándwiches saldrían '+plata(sueltos)+". El combo se vende "+plata(p.precio)+": el cliente ahorra "+plata(sueltos-p.precio)+" ("+pct(sueltos?(sueltos-p.precio)/sueltos:0)+").</p></div>"}
+    else{var ed=editorComp(receta[p.id]||[],"receta",p.id,esGusto?"Por armada":"Por unidad"),al=esGusto?alcanza(p):null;
+      h2+='<div class="tarjeta"><h2>'+(esGusto?"Resumen de la armada":"Costo de compra")+'</h2>'+(esGusto?
+        '<form class="g-form" data-rinde="'+esc(p.id)+'" style="grid-template-columns:minmax(0,1fr) auto"><div class="campo"><label for="g-rinde">Sándwiches que salen de una armada</label><input class="g-in" id="g-rinde" name="rinde" inputmode="numeric" value="'+p.rinde+'" required></div><button class="boton suave" type="submit">Guardar</button></form>'+
+        '<table class="tabla" style="margin-top:12px"><tr><td>Costo de una armada</td><td class="num"><b>'+plata(ed.total)+'</b></td></tr><tr><td>Costo por sándwich</td><td class="num"><b>'+(co==null?"—":plata(co))+'</b></td></tr>'+
+        '<tr><td>Con el stock de hoy alcanza para</td><td class="num"><b>'+((receta[p.id]||[]).length?al.armadas+" armadas":"—")+'</b>'+(al.limite&&(receta[p.id]||[]).length?'<br><small class="chica">lo primero que se acaba: '+esc(al.limite.nombre)+'</small>':"")+'</td></tr></table>':
+        '<p class="chica">Si lo comprás hecho, agregá abajo a qué precio lo pagás (cargalo primero como insumo en Stock) y el sistema te muestra cuánto te deja.</p>')+'</div>';
+      h2+='<div class="tarjeta ancho"><h2>'+(esGusto?"Receta: qué lleva una armada":"De qué está hecho")+'</h2>'+((receta[p.id]||[]).length?"":'<p class="chica" style="margin-bottom:8px">Todavía no tiene ingredientes cargados.</p>')+ed.html+
+        '<p class="g-nota">Cambiá una cantidad y salí del casillero: se guarda sola y el costo se recalcula.</p></div>'}
+    el.innerHTML=h2+'</div>'};
+
+  /* =================== STOCK =================== */
+  M.vistas.stock=function(el){var crudos=ins.filter(function(i){return !i.es_preparacion}),preps=ins.filter(function(i){return i.es_preparacion}),ps=productos();
+    var valor=crudos.reduce(function(a,i){var c=costoUnit(i);return a+(c==null?0:c*Math.max(0,+i.stock))},0),bajos=crudos.filter(function(i){return +i.stock_minimo>0&&+i.stock<+i.stock_minimo}).length;
+    var h='<div class="g-titulo"><div><h2>Stock</h2><p class="chica">Anotá lo que comprás y lo que producís: el sistema lleva la cuenta y te dice para cuánto alcanza.</p></div>'+
+      '<div class="g-acc"><button type="button" class="boton" data-form="compra">+ Anotar compra</button><button type="button" class="boton suave" data-form="produccion">Anotar producción</button><button type="button" class="boton suave" data-form="insumo">Nuevo insumo</button></div></div>';
+    if(est.form==="compra")h+='<div class="tarjeta"><h2>Anotar una compra</h2><form class="g-form" data-guardar="compra"><div class="campo ancho" style="grid-column:span 2"><label>Qué compraste</label><select name="ins" required><option value="">Elegí…</option>'+crudos.map(function(i){return '<option value="'+i.id+'"'+(est.insumo==i.id?" selected":"")+'>'+esc(i.nombre)+" ("+i.unidad+")</option>"}).join("")+'</select></div>'+
+      '<div class="campo"><label>Cantidad (en g, ml o unidades)</label><input class="g-in" name="q" inputmode="decimal" required placeholder="Ej: 1000"></div><div class="campo"><label>Cuánto pagaste en total ($)</label><input class="g-in" name="t" inputmode="decimal" required></div>'+
+      '<div class="campo"><label>Fecha</label><input class="g-in" name="f" type="date" value="'+M.hoy()+'"></div><div class="campo" style="grid-column:span 2"><label>Nota (opcional)</label><input class="g-in" name="n"></div><div class="g-acc"><button class="boton" type="submit">Guardar compra</button><button type="button" class="mini" data-form="">Cancelar</button></div></form>'+
+      '<p class="g-nota">Suma al stock y actualiza el precio del insumo, así los costos de todos los productos quedan al día.</p></div>';
+    if(est.form==="produccion")h+='<div class="tarjeta"><h2>Anotar lo que produjiste</h2><form class="g-form" data-guardar="produccion"><div class="campo ancho" style="grid-column:span 2"><label>Qué hiciste</label><select name="prod" required><option value="">Elegí…</option>'+ps.filter(function(p){return (receta[p.id]||[]).length}).map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.nombre)+"</option>"}).join("")+'</select></div>'+
+      '<div class="campo"><label>Cuántas armadas</label><input class="g-in" name="a" inputmode="decimal" required placeholder="Ej: 4"></div><div class="campo"><label>Fecha</label><input class="g-in" name="f" type="date" value="'+M.hoy()+'"></div><div class="g-acc"><button class="boton" type="submit">Guardar y descontar del stock</button><button type="button" class="mini" data-form="">Cancelar</button></div></form>'+
+      '<p class="g-nota">Descuenta del stock todo lo que lleva esa receta, incluidas las preparaciones (empaste, pollo, etc.).</p></div>';
+    if(est.form==="insumo"||est.form==="editar"){var e=est.form==="editar"?porId[est.insumo]||{}:{};
+      h+='<div class="tarjeta"><h2>'+(e.id?"Editar "+esc(e.nombre):"Nuevo insumo")+'</h2><form class="g-form" data-guardar="insumo" data-id="'+(e.id||"")+'"><div class="campo ancho" style="grid-column:span 2"><label>Nombre</label><input class="g-in" name="nombre" required value="'+esc(e.nombre||"")+'"></div>'+
+        '<div class="campo"><label>Se mide en</label><select name="unidad"><option value="g"'+(e.unidad==="g"?" selected":"")+'>gramos</option><option value="ml"'+(e.unidad==="ml"?" selected":"")+'>mililitros</option><option value="un"'+(e.unidad==="un"?" selected":"")+'>unidades</option></select></div>'+
+        (e.es_preparacion?'<div class="campo"><label>Cuánto rinde la preparación</label><input class="g-in" name="rend" inputmode="decimal" value="'+(e.rendimiento||"")+'"></div>':
+        '<div class="campo"><label>Precio que pagás ($)</label><input class="g-in" name="precio" inputmode="decimal" value="'+(e.precio_compra||"")+'"></div><div class="campo"><label>Por cuánta cantidad</label><input class="g-in" name="cantc" inputmode="decimal" value="'+(e.cantidad_compra||"")+'"></div>')+
+        '<div class="campo"><label>Stock que tenés hoy</label><input class="g-in" name="stock" inputmode="decimal" value="'+(e.id?+e.stock:"")+'"></div><div class="campo"><label>Avisarme si baja de</label><input class="g-in" name="min" inputmode="decimal" value="'+(e.id?+e.stock_minimo:"")+'"></div>'+
+        (e.id?"":'<label class="campo ancho" style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px"><input type="checkbox" name="prep" style="width:18px;height:18px"> Es una preparación (algo que cocinás antes, como el empaste)</label>')+
+        '<div class="g-acc"><button class="boton" type="submit">Guardar</button><button type="button" class="mini" data-form="">Cancelar</button></div></form></div>'}
+    h+='<div class="kpis">'+kpi("Plata en stock",plata(valor),"a precio de compra")+kpi("Insumos",crudos.length,preps.length+" preparaciones")+kpi("Bajo el mínimo",bajos,bajos?"hay que comprar":"todo bien",bajos?"alerta":"")+'</div>'+
+      '<div class="subtabs chips" style="margin:0 0 14px;padding:0">'+[["insumos","Insumos"],["producir","Qué puedo producir"],["preparaciones","Preparaciones"],["movimientos","Movimientos"]].map(function(t){return '<button type="button" data-stab="'+t[0]+'" aria-pressed="'+(est.tab===t[0])+'">'+t[1]+'</button>'}).join("")+'</div>';
+    if(est.tab==="insumos"){var uso={};ps.filter(function(p){return p.tipo==="gusto"}).forEach(function(p){var n=necesita(p);Object.keys(n).forEach(function(k){if(!uso[k]||n[k]>uso[k].q)uso[k]={q:n[k],p:p}})});
+      h+='<div class="tarjeta"><div class="rueda"><table class="tabla"><tr><th>Insumo</th><th class="num">Tenés</th><th class="num">Alcanza para</th><th class="num">Cuesta</th><th class="num">Último precio</th><th></th></tr>'+crudos.map(function(i){var u=uso[i.id],st=Math.max(0,+i.stock),bajo=+i.stock_minimo>0&&+i.stock<+i.stock_minimo;
+        return '<tr><td><b>'+esc(i.nombre)+'</b>'+(i.nota?'<br><small class="chica">'+esc(i.nota)+'</small>':"")+'</td><td class="num">'+cant(i.stock,i.unidad)+(bajo?' <span class="pill mal">bajo</span>':"")+'</td><td class="num">'+(u?Math.floor(st/u.q)+" armadas<br><small class=\"chica\">de "+esc(u.p.nombre)+"</small>":'<small class="chica">no se usa</small>')+
+          '</td><td class="num">'+porUnidad(i)+'</td><td class="num">'+(i.precio_compra?plata(i.precio_compra)+"<br><small class=\"chica\">por "+cant(i.cantidad_compra,i.unidad)+"</small>":"—")+'</td><td class="num"><button type="button" class="mini" data-compra="'+i.id+'">Compré</button> <button type="button" class="mini" data-editar="'+i.id+'">Editar</button></td></tr>'}).join("")+'</table></div></div>'}
+    if(est.tab==="producir")h+='<div class="tarjeta"><h2>Con lo que tenés hoy</h2><table class="tabla"><tr><th>Gusto</th><th class="num">Armadas</th><th class="num">Sándwiches</th><th>Lo primero que se acaba</th></tr>'+ps.filter(function(p){return (receta[p.id]||[]).length&&p.tipo==="gusto"}).map(function(p){var a=alcanza(p);
+      return '<tr><td><b>'+esc(p.nombre)+'</b></td><td class="num">'+a.armadas+'</td><td class="num">'+a.armadas*p.rinde+'</td><td>'+(a.limite?esc(a.limite.nombre)+' <small class="chica">(quedan '+cant(Math.max(0,a.limite.stock),a.limite.unidad)+')</small>':"—")+'</td></tr>'}).join("")+'</table><p class="g-nota">Cada fila es por separado: si hacés de un gusto, baja lo que queda para los otros.</p></div>';
+    if(est.tab==="preparaciones")h+=preps.map(function(i){var ed=editorComp(formula[i.id]||[],"formula",i.id,"Cantidad");
+      return '<div class="tarjeta"><div class="dia-cab"><h2>'+esc(i.nombre)+'</h2><small>rinde '+cant(i.rendimiento||0,i.unidad)+" · sale "+plata(ed.total)+" · "+porUnidad(i)+'</small></div>'+(i.nota?'<p class="chica" style="margin:6px 0">'+esc(i.nota)+'</p>':"")+ed.html+'<div class="g-acc" style="margin-top:10px"><button type="button" class="mini" data-editar="'+i.id+'">Cambiar nombre o rendimiento</button></div></div>'}).join("")||'<div class="tarjeta"><p class="chica">No hay preparaciones cargadas.</p></div>';
+    if(est.tab==="movimientos"){var mov=compras.map(function(c){return {f:c.fecha,t:"Compra",n:(porId[c.insumo_id]||{}).nombre,d:"+"+cant(c.cantidad,(porId[c.insumo_id]||{}).unidad),p:plata(c.total),k:c.creado}}).concat(prods.map(function(c){return {f:c.fecha,t:"Producción",n:(M.datos().productos[c.producto_id]||{}).nombre,d:nro(c.armadas,1)+" armadas",p:"",k:c.creado}})).sort(function(a,b){return b.k.localeCompare(a.k)});
+      h+='<div class="tarjeta">'+(mov.length?'<div class="rueda"><table class="tabla"><tr><th>Fecha</th><th>Movimiento</th><th>Qué</th><th class="num">Cantidad</th><th class="num">Pagaste</th></tr>'+mov.map(function(m){return '<tr><td>'+M.fechaCorta(m.f)+'</td><td><span class="pill '+(m.t==="Compra"?"bien":"gris")+'">'+m.t+'</span></td><td>'+esc(m.n||"")+'</td><td class="num">'+m.d+'</td><td class="num">'+m.p+'</td></tr>'}).join("")+'</table></div>':'<p class="chica">Todavía no anotaste compras ni producción.</p>')+'</div>'}
+    el.innerHTML=h};
+
+  /* =================== ESTADÍSTICAS =================== */
+  M.vistas.estadisticas=function(el){var H=M.hoy(),todo=ventas(),P=est.periodo,desde=P==="todo"?"2000-01-01":M.masDias(H,-(P-1)),l=enRango(todo,desde,H),r=resumen(l);
+    var ant=P==="todo"?null:resumen(enRango(todo,M.masDias(desde,-P),M.masDias(desde,-1))),reales=M.datos().pedidos.filter(function(p){return p.estado!=="cancelado"}).length;
+    var h='<div class="g-titulo"><div><h2>Estadísticas</h2><p class="chica">Según la fecha en que entró cada pedido. No cuenta los cancelados.</p></div><div class="chips" style="margin:0;padding:0">'+
+      [[7,"7 días"],[30,"30 días"],[90,"90 días"],[365,"1 año"],["todo","Todo"]].map(function(o){return '<button type="button" data-periodo="'+o[0]+'" aria-pressed="'+(String(P)===String(o[0]))+'">'+o[1]+'</button>'}).join("")+'</div></div>';
+    if(est.demo)h+='<div class="demo-aviso"><span>⚠ Estás viendo DATOS DE EJEMPLO, inventados para mostrar cómo se ve. No son ventas reales.</span><button type="button" class="mini" data-demo="0">Volver a mis datos</button></div>';
+    else if(reales<5)h+='<div class="demo-aviso"><span>Todavía hay pocas ventas cargadas ('+reales+'). Podés ver cómo queda esta pantalla con datos de ejemplo.</span><button type="button" class="mini" data-demo="1">Ver con datos de ejemplo</button></div>';
+    var d=function(a,b){return ant?delta(a,b):["",""]},dv=d(r.total,ant&&ant.total),dn=d(r.n,ant&&ant.n),dt=d(r.ticket,ant&&ant.ticket),ds=d(r.sand,ant&&ant.sand);
+    h+='<div class="kpis">'+kpi("Ventas",plata(r.total),dv[0],"",dv[1])+kpi("Pedidos",r.n,dn[0],"",dn[1])+kpi("Ticket promedio",plata(r.ticket),dt[0],"",dt[1])+kpi("Sándwiches",nro(r.sand),ds[0],"",ds[1])+
+      kpi("Ganancia estimada",plata(r.ganancia),r.margen==null?"faltan costos":"margen "+pct(r.margen)+(r.sinCosto?" · sin contar "+plata(r.sinCosto)+" de productos sin costo":""))+kpi("Cobrado",pct(r.total?r.cobrado/r.total:null),plata(r.total-r.cobrado)+" por cobrar")+'</div>';
+    if(!l.length){el.innerHTML=h+'<div class="tarjeta"><p class="chica">No hay ventas en este período.</p></div>';return}
+    /* por día */
+    var nd=P==="todo"?Math.min(120,Math.max(14,Math.round((new Date(H)-new Date(l.map(function(p){return diaAR(p.creado)}).sort()[0]))/864e5)+1)):Math.min(P,120),serie=[],ini=M.masDias(H,-(nd-1)),mapa={};
+    l.forEach(function(p){var k=diaAR(p.creado);mapa[k]=mapa[k]||{v:0,n:0};mapa[k].v+=p.total;mapa[k].n++});
+    for(var k=0;k<nd;k++){var f=M.masDias(ini,k);serie.push({f:f,v:(mapa[f]||{v:0}).v,n:(mapa[f]||{n:0}).n})}
+    h+='<div class="g-grid dos"><div class="tarjeta ancho"><h2>Ventas por día</h2>'+grafDias(serie)+(P===365||P==="todo"?'<p class="g-nota">Se muestran los últimos '+nd+' días.</p>':"")+'</div>';
+    /* por categoría y por producto */
+    var cat={},prod={},gus={};l.forEach(function(p){p.pedido_renglones.forEach(function(x){var pr=M.datos().productos[x.producto_id]||{pestana:"otros",nombre:x.nombre},plataL=x.cantidad*x.precio;
+      cat[pr.pestana]=cat[pr.pestana]||{v:0,u:0};cat[pr.pestana].v+=plataL;cat[pr.pestana].u+=x.cantidad;
+      prod[x.producto_id]=prod[x.producto_id]||{n:pr.nombre||x.nombre,c:pr.pestana,v:0,u:0};prod[x.producto_id].v+=plataL;prod[x.producto_id].u+=x.cantidad;
+      if(pr.tipo==="gusto")gus[x.producto_id]=(gus[x.producto_id]||0)+x.cantidad;(M.datos().contenido[x.producto_id]||[]).forEach(function(c){gus[c.gusto_id]=(gus[c.gusto_id]||0)+c.cantidad*x.cantidad})})});
+    var bruto=Object.keys(cat).reduce(function(a,k){return a+cat[k].v},0)||1,lp=Object.keys(prod).map(function(k){return prod[k]});
+    h+='<div class="tarjeta"><h2>Ventas por categoría</h2>'+barrasH(CATS.filter(function(c){return cat[c]}).map(function(c){return {n:CAT[c],v:cat[c].v,x:pct(cat[c].v/bruto)}}).sort(function(a,b){return b.v-a.v}),plata)+'<p class="g-nota">A precio de lista, antes de descuentos ('+plata(r.desc)+' en el período).</p></div>';
+    h+='<div class="tarjeta"><h2>Sándwiches por gusto</h2>'+barrasH(Object.keys(gus).map(function(k){return {n:(M.datos().productos[k]||{}).nombre||k,v:gus[k]}}).sort(function(a,b){return b.v-a.v}),function(v){return nro(v)},"Sin sándwiches en el período.")+'<p class="g-nota">Cuenta los sueltos y los que van dentro de los combos.</p></div>';
+    h+='<div class="tarjeta"><h2>Ranking general por plata</h2>'+barrasH(lp.slice().sort(function(a,b){return b.v-a.v}).slice(0,10).map(function(x){return {n:x.n,v:x.v,x:nro(x.u)+" un"}}),plata)+'</div>';
+    h+='<div class="tarjeta"><h2>Ranking general por unidades</h2>'+barrasH(lp.slice().sort(function(a,b){return b.u-a.u}).slice(0,10).map(function(x){return {n:x.n,v:x.u,x:plata(x.v)}}),function(v){return nro(v)})+'</div>';
+    CATS.forEach(function(c){var li=lp.filter(function(x){return x.c===c}).sort(function(a,b){return b.v-a.v});if(!li.length)return;
+      h+='<div class="tarjeta"><h2>Ranking de '+CAT[c]+'</h2><table class="tabla"><tr><th>#</th><th>Producto</th><th class="num">Unidades</th><th class="num">Plata</th><th class="num">Parte</th></tr>'+li.map(function(x,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(x.n)+'</td><td class="num">'+nro(x.u)+'</td><td class="num">'+plata(x.v)+'</td><td class="num">'+pct(x.v/cat[c].v)+'</td></tr>'}).join("")+'</table></div>'});
+    /* cuándo y cómo */
+    var sem=[0,0,0,0,0,0,0],ret=0,env=0,tr=0,ef=0;l.forEach(function(p){sem[new Date(diaAR(p.creado)+"T12:00:00").getDay()]+=p.total;if(p.entrega==="envio")env+=p.total;else ret+=p.total;if(p.pago==="efectivo")ef+=p.total;else tr+=p.total});
+    h+='<div class="tarjeta"><h2>Qué día entran más pedidos</h2>'+barrasH([1,2,3,4,5,6,0].map(function(i){return {n:DSEM[i],v:sem[i]}}),plata)+'</div>';
+    h+='<div class="tarjeta"><h2>Cómo lo reciben y cómo pagan</h2><p class="chica" style="margin-bottom:8px">Entrega</p>'+partes([{n:"Retiran",v:ret,c:"var(--tinta)"},{n:"Envío",v:env,c:"var(--rojo)"}])+
+      '<p class="chica" style="margin:16px 0 8px">Pago</p>'+partes([{n:"Transferencia",v:tr,c:"var(--tinta)"},{n:"Efectivo",v:ef,c:"var(--rojo)"}])+'</div>';
+    var cli={};l.forEach(function(p){var k=String(p.telefono).replace(/\D/g,"")||p.nombre;cli[k]=cli[k]||{n:p.nombre,c:0,v:0};cli[k].c++;cli[k].v+=p.total});
+    h+='<div class="tarjeta ancho"><h2>Mejores clientes</h2><div class="rueda"><table class="tabla"><tr><th>#</th><th>Cliente</th><th class="num">Pedidos</th><th class="num">Compró</th><th class="num">Ticket</th></tr>'+Object.keys(cli).map(function(k){return cli[k]}).sort(function(a,b){return b.v-a.v}).slice(0,10).map(function(c,i){
+      return '<tr><td>'+(i+1)+'</td><td>'+esc(c.n)+'</td><td class="num">'+c.c+'</td><td class="num">'+plata(c.v)+'</td><td class="num">'+plata(c.v/c.c)+'</td></tr>'}).join("")+'</table></div></div></div>';
+    el.innerHTML=h};
+
+  /* ---------- no pisar lo que se está escribiendo cuando el panel se refresca solo ---------- */
+  Object.keys(M.vistas).forEach(function(k){var f=M.vistas[k];M.vistas[k]=function(el){var a=document.activeElement;
+    if(!forzar&&a&&el.contains(a)&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))return;forzar=false;f(el)}});
+  function pintar(){forzar=true;M.pintar()}
+  function recargar(){forzar=true;return M.traer()}
+  function fallo(e){forzar=true;alert(e&&e.dicho?e.dicho:"No se pudo guardar. Revisá la conexión y probá de nuevo.")}
+  function num(v){var n=parseFloat(String(v).replace(/\./g,"").replace(",","."));return isFinite(n)?n:NaN}
+  function numSimple(v){var n=parseFloat(String(v).replace(",","."));return isFinite(n)?n:NaN}
+
+  var caja=$("v-extra");
+  caja.addEventListener("click",function(e){var t=e.target,x;
+    if((x=t.closest("[data-prodficha]"))){est.prod=x.dataset.prodficha||null;pintar();window.scrollTo(0,0);return}
+    if((x=t.closest("[data-stab]"))){est.tab=x.dataset.stab;pintar();return}
+    if((x=t.closest("[data-form]"))){est.form=x.dataset.form||null;est.insumo=null;pintar();return}
+    if((x=t.closest("[data-compra]"))){est.form="compra";est.insumo=x.dataset.compra;pintar();window.scrollTo(0,0);return}
+    if((x=t.closest("[data-editar]"))){est.form="editar";est.insumo=x.dataset.editar;pintar();window.scrollTo(0,0);return}
+    if((x=t.closest("[data-periodo]"))){est.periodo=x.dataset.periodo==="todo"?"todo":+x.dataset.periodo;pintar();return}
+    if((x=t.closest("[data-demo]"))){est.demo=x.dataset.demo==="1";pintar();return}
+    if((x=t.closest("[data-sugerido]"))){$("g-precio").value=x.dataset.sugerido;$("g-precio").focus();return}
+    if((x=t.closest("[data-quitar]"))){if(!confirm("¿Quitar este ingrediente?"))return;
+      var c=x.dataset.quitar==="receta"?"producto_receta?producto_id=eq."+encodeURIComponent(x.dataset.dueno)+"&insumo_id=eq."+x.dataset.ins:"insumo_formula?preparacion_id=eq."+x.dataset.dueno+"&insumo_id=eq."+x.dataset.ins;
+      M.llamar(c,{metodo:"DELETE"}).then(recargar,fallo)}});
+  caja.addEventListener("mousemove",function(e){var z=e.target.closest&&e.target.closest("[data-tip]"),tip=$("g-tip");
+    if(!z){if(tip)tip.hidden=true;return}if(!tip){tip=document.createElement("div");tip.id="g-tip";document.body.appendChild(tip)}
+    tip.hidden=false;tip.textContent=z.dataset.tip;tip.style.left=e.clientX+"px";tip.style.top=e.clientY+"px"});
+  caja.addEventListener("mouseleave",function(){var tip=$("g-tip");if(tip)tip.hidden=true});
+  caja.addEventListener("change",function(e){var t=e.target;
+    if(t.dataset.activo){M.llamar("productos?id=eq."+encodeURIComponent(t.dataset.activo),{metodo:"PATCH",cuerpo:{activo:t.checked,actualizado:new Date().toISOString()}}).then(recargar,fallo);return}
+    if(t.dataset.comp){var q=numSimple(t.value);if(!(q>0)){alert("Poné una cantidad mayor a cero.");return}
+      var c=t.dataset.comp==="receta"?"producto_receta?producto_id=eq."+encodeURIComponent(t.dataset.dueno)+"&insumo_id=eq."+t.dataset.ins:"insumo_formula?preparacion_id=eq."+t.dataset.dueno+"&insumo_id=eq."+t.dataset.ins;
+      M.llamar(c,{metodo:"PATCH",cuerpo:{cantidad:q}}).then(recargar,fallo)}});
+  caja.addEventListener("submit",function(e){e.preventDefault();var f=e.target,d=new FormData(f),b=f.querySelector('[type="submit"]');
+    var hecho=function(){est.form=null;est.insumo=null;return recargar()},mal=function(er){if(b)b.disabled=false;fallo(er)};
+    if(f.dataset.precio){var p=Math.round(num(d.get("precio")));if(!(p>0)){alert("Poné un precio válido.");return}if(b)b.disabled=true;
+      M.llamar("productos?id=eq."+encodeURIComponent(f.dataset.precio),{metodo:"PATCH",cuerpo:{precio:p,actualizado:new Date().toISOString()}}).then(recargar,mal);return}
+    if(f.dataset.rinde){var r=Math.round(numSimple(d.get("rinde")));if(!(r>0)){alert("Poné cuántos sándwiches salen.");return}
+      M.llamar("productos?id=eq."+encodeURIComponent(f.dataset.rinde),{metodo:"PATCH",cuerpo:{rinde:r}}).then(recargar,mal);return}
+    if(f.dataset.agrega){var q=numSimple(d.get("q")),i=d.get("ins");if(!i||!(q>0)){alert("Elegí el ingrediente y la cantidad.");return}
+      var cuerpo=f.dataset.agrega==="receta"?{producto_id:f.dataset.dueno,insumo_id:+i,cantidad:q}:{preparacion_id:+f.dataset.dueno,insumo_id:+i,cantidad:q};
+      M.llamar(f.dataset.agrega==="receta"?"producto_receta":"insumo_formula",{cuerpo:cuerpo}).then(recargar,mal);return}
+    if(f.dataset.guardar==="compra"){var qc=numSimple(d.get("q")),tc=numSimple(d.get("t"));if(!d.get("ins")||!(qc>0)||!(tc>=0)){alert("Completá qué compraste, la cantidad y el total.");return}if(b)b.disabled=true;
+      M.llamar("rpc/registrar_compra",{cuerpo:{p_insumo:+d.get("ins"),p_cantidad:qc,p_total:tc,p_fecha:d.get("f")||null,p_nota:d.get("n")||null}}).then(hecho,mal);return}
+    if(f.dataset.guardar==="produccion"){var a=numSimple(d.get("a"));if(!d.get("prod")||!(a>0)){alert("Elegí qué hiciste y cuántas armadas.");return}if(b)b.disabled=true;
+      M.llamar("rpc/registrar_produccion",{cuerpo:{p_producto:d.get("prod"),p_armadas:a,p_fecha:d.get("f")||null,p_nota:null}}).then(hecho,mal);return}
+    if(f.dataset.guardar==="insumo"){var n=String(d.get("nombre")||"").trim();if(n.length<2){alert("Falta el nombre.");return}
+      var o={nombre:n,unidad:d.get("unidad"),stock:numSimple(d.get("stock"))||0,stock_minimo:numSimple(d.get("min"))||0,actualizado:new Date().toISOString()};
+      if(d.has("precio")){o.precio_compra=numSimple(d.get("precio"))||null;o.cantidad_compra=numSimple(d.get("cantc"))||null}
+      if(d.has("rend"))o.rendimiento=numSimple(d.get("rend"))||null;
+      if(b)b.disabled=true;
+      if(f.dataset.id)M.llamar("insumos?id=eq."+f.dataset.id,{metodo:"PATCH",cuerpo:o}).then(hecho,mal);
+      else{o.es_preparacion=!!d.get("prep");M.llamar("insumos",{cuerpo:o}).then(hecho,mal)}}});
+})();
+</script>
+
 </body>
 </html>
