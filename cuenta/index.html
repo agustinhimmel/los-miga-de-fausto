@@ -31,6 +31,11 @@ h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
 .cab{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .cab img{width:40px;height:40px;border-radius:50%}
 .cab h1{font-size:20px;flex:1}
+.cab .a-ajustes{background:none;border:1px solid var(--linea);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--tinta);font-weight:600;cursor:pointer;white-space:nowrap}
+.comp{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--ambar-suave);color:var(--ambar);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:14px;font-weight:600}
+.comp.ok{background:var(--verde-suave);color:var(--verde)}
+.comp .boton{width:auto;padding:8px 14px;font-size:13px}
+.enlace-cal{display:block;text-align:center;font-size:13px;color:var(--tinta2);margin-top:10px}
 .cab .a-tienda{font-size:13px;color:var(--tinta2);font-weight:600;white-space:nowrap}
 .cab button{background:none;border:1px solid var(--linea);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--tinta2);cursor:pointer}
 .tarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:16px;padding:16px;margin-bottom:12px}
@@ -180,6 +185,7 @@ details .dos{margin-top:8px}
     <img src="../img/fausto.png" alt="">
     <h1 id="titulo">Los Miga de Fausto</h1>
     <a class="a-tienda" href="../">Ir a la tienda</a>
+    <button type="button" class="a-ajustes" data-ir="ajustes" id="b-ajustes" hidden>⚙ Ajustes</button>
     <button type="button" id="salir" hidden>Salir</button>
   </header>
 
@@ -267,6 +273,9 @@ details .dos{margin-top:8px}
       .then(function(r){if(!r.ok)return r.json().catch(function(){return {}}).then(function(j){var e=new Error("La base contestó "+r.status);if(j&&j.code==="P0001")e.dicho=j.message;else if(j&&j.code==="23505")e.dicho="Ya existe uno con ese nombre.";throw e});
         return r.status===204?null:r.text().then(function(t){return t?JSON.parse(t):null})})}
 
+  function llamarStorage(ruta){return (S.v-Date.now()<60000?renovar():Promise.resolve()).then(function(){
+      return fetch(BASE.url+"/storage/v1/object/sign/comprobantes/"+ruta,{method:"POST",headers:{apikey:BASE.clave,Authorization:"Bearer "+S.a,"Content-Type":"application/json"},body:JSON.stringify({expiresIn:600})})})
+    .then(function(r){if(!r.ok)throw new Error("no");return r.json()}).then(function(j){return BASE.url+"/storage/v1"+j.signedURL})}
   /* ---------- datos ---------- */
   var pedidos=[],contenido={},productos={},dias={},vista="inicio",listo=false,fEstado="activos",fDia="todos",buscar="",abiertos={};
   var ORDEN={nuevo:0,confirmado:1,en_preparacion:2,en_camino:3,entregado:4,cancelado:5};
@@ -321,12 +330,17 @@ details .dos{margin-top:8px}
   /* ---------- pedidos ---------- */
   function telWa(t){var d=String(t).replace(/\D/g,"").replace(/^0+/,"");if(d.indexOf("54")===0)return d;if(d.length===10)return "549"+d;return d}
   function enlaceSeguir(p){return new URL("../pedido/?c="+p.id,location.href).href}
+  function enlaceCal(p){var f=p.fecha_entrega.replace(/-/g,""),f2=masDias(p.fecha_entrega,1).replace(/-/g,""),
+      det=p.pedido_renglones.map(function(r){return r.cantidad+" × "+r.nombre}).join("\n")+"\n\nTotal: "+plata(p.total)+(p.cobrado?" (cobrado)":" ("+p.pago+")")+"\nCelular: "+p.telefono+(p.aclaracion?"\nAclaración: "+p.aclaracion:"");
+    return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent("🥪 N° "+p.numero+" · "+p.nombre+" · "+p.sandwiches+" sándw. · "+(p.entrega==="envio"?"Envío":"Retira"))+
+      "&dates="+f+"/"+f2+"&details="+encodeURIComponent(det)+(p.direccion?"&location="+encodeURIComponent(p.direccion):"")}
   function avisoWa(p){var n=p.nombre.split(" ")[0],m={
       nuevo:"Hola "+n+"! Recibimos tu pedido N° "+p.numero+" de Los Miga de Fausto. Enseguida te lo confirmamos.",
       confirmado:"Hola "+n+"! Tu pedido N° "+p.numero+" quedó confirmado para el "+fechaCorta(p.fecha_entrega)+". Total: "+plata(p.total)+".",
       en_preparacion:"Hola "+n+"! Ya estamos preparando tu pedido N° "+p.numero+".",
       en_camino:p.entrega==="envio"?"Hola "+n+"! Tu pedido N° "+p.numero+" ya está en camino. Podés ver por dónde viene acá:":"Hola "+n+"! Tu pedido N° "+p.numero+" ya está listo para retirar.",
       entregado:"Gracias "+n+"! Que los disfrutes.",cancelado:"Hola "+n+", tu pedido N° "+p.numero+" quedó cancelado."}[p.estado];
+    if(p.cobrado&&p.estado!=="cancelado")m+="\n✓ Ya recibimos tu pago. ¡Gracias!";
     if(p.estado!=="entregado"&&p.estado!=="cancelado")m+=(p.estado==="en_camino"&&p.entrega==="envio"?"\n":"\nSeguilo acá: ")+enlaceSeguir(p);
     return "https://wa.me/"+telWa(p.telefono)+"?text="+encodeURIComponent(m)}
   function tarjeta(p){var s=siguiente(p),a=anterior(p),h="";
@@ -340,28 +354,30 @@ details .dos{margin-top:8px}
     if(p.descuento)h+="<li><span>Descuento</span><span>−"+plata(p.descuento)+"</span></li>";
     h+='</ul><div class="total"><span>Total · '+p.sandwiches+' sándwiches</span><span>'+plata(p.total)+'</span></div><div class="acciones">';
     if(s)h+='<button type="button" class="boton" data-estado="'+s[0]+'" data-id="'+p.id+'">'+s[1]+'</button>';
+    if(p.comprobante)h+='<div class="comp'+(p.cobrado?" ok":"")+'"><span>📎 '+(p.cobrado?"Pago confirmado. Comprobante":"Mandó el comprobante")+(p.comprobante_subido?" el "+new Date(p.comprobante_subido).toLocaleString("es-AR",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"}):"")+'</span><button type="button" class="boton suave" data-comp="'+esc(p.comprobante)+'">Ver comprobante</button></div>';
     h+='<div class="dos"><a class="boton wa" target="_blank" rel="noopener" href="'+esc(avisoWa(p))+'">Avisarle por WhatsApp</a>'+
-      '<label class="cobro'+(p.cobrado?" si":"")+'"><input type="checkbox" data-cobro="'+p.id+'"'+(p.cobrado?" checked":"")+'>'+(p.cobrado?"Cobrado":"Marcar cobrado")+'</label></div>';
+      '<label class="cobro'+(p.cobrado?" si":"")+'"><input type="checkbox" data-cobro="'+p.id+'"'+(p.cobrado?" checked":"")+'>'+(p.cobrado?"Cobrado":p.comprobante?"Confirmar pago":"Marcar cobrado")+'</label></div>';
+    h+='<a class="enlace-cal" target="_blank" rel="noopener" href="'+esc(enlaceCal(p))+'">📅 Agregar a mi Google Calendar</a>';
     if(a||p.estado!=="cancelado"){h+='<details><summary>Más opciones</summary><div class="dos">'+
       (a?'<button type="button" class="boton suave" data-estado="'+a+'" data-id="'+p.id+'">'+(p.estado==="cancelado"?"Reabrir el pedido":"Volver un paso atrás")+'</button>':"<span></span>")+
       (p.estado!=="cancelado"?'<button type="button" class="boton suave" data-estado="cancelado" data-id="'+p.id+'">Cancelar el pedido</button>':"")+'</div></details>'}
     return h+"</div></div>"}
   /* ---------- pedidos: filtros por estado, por día y búsqueda; cada pedido se despliega ---------- */
   var ESTADOS=[["activos","Por hacer","todo lo que falta entregar"],["nuevo","Para confirmar"],["confirmado","Confirmados"],["en_preparacion","En preparación"],
-    ["en_camino","En camino / para retirar"],["sin_cobrar","Sin cobrar"],["entregado","Entregados"],["cancelado","Cancelados"],["todos","Todos"]];
-  function pasaEstado(p,f){return f==="todos"?true:f==="activos"?(p.estado!=="entregado"&&p.estado!=="cancelado"):f==="sin_cobrar"?(!p.cobrado&&p.estado!=="cancelado"):p.estado===f}
+    ["en_camino","En camino / para retirar"],["revisar","Pagos a revisar","mandaron comprobante y falta confirmar"],["sin_cobrar","Sin cobrar"],["entregado","Entregados"],["cancelado","Cancelados"],["todos","Todos"]];
+  function pasaEstado(p,f){return f==="todos"?true:f==="activos"?(p.estado!=="entregado"&&p.estado!=="cancelado"):f==="sin_cobrar"?(!p.cobrado&&p.estado!=="cancelado"):f==="revisar"?(!!p.comprobante&&!p.cobrado&&p.estado!=="cancelado"):p.estado===f}
   function pasaDia(p,f){var H=hoy();return f==="todos"?true:f==="hoy"?p.fecha_entrega===H:f==="manana"?p.fecha_entrega===masDias(H,1):f==="semana"?(p.fecha_entrega>=H&&p.fecha_entrega<=masDias(H,6)):f==="pasados"?p.fecha_entrega<H:p.fecha_entrega===f}
   function pasaBusca(p){if(!buscar)return true;var q=buscar.toLowerCase(),d=q.replace(/\D/g,"");
     return p.nombre.toLowerCase().indexOf(q)>=0||(d&&(String(p.telefono).replace(/\D/g,"").indexOf(d)>=0||String(p.numero)===d))}
   function filaPedido(p){var ab=!!abiertos[p.id],t=p.sandwiches+" sándw.";
     return '<div class="ped'+(ab?" abierto":"")+(p.estado==="entregado"||p.estado==="cancelado"?" apagado":"")+'"><button type="button" class="ped-fila" data-abrir="'+p.id+'" aria-expanded="'+ab+'">'+
       '<span class="ped-n">N° '+p.numero+'</span><span class="ped-quien"><b>'+esc(p.nombre)+'</b><small>'+fechaCorta(p.fecha_entrega)+" · "+(p.entrega==="envio"?"Envío":"Retira")+" · "+t+'</small></span>'+
-      '<span class="ped-plata"><b>'+plata(p.total)+'</b><small class="'+(p.cobrado?"si":"no")+'">'+(p.cobrado?"✓ cobrado":"sin cobrar")+'</small></span>'+
+      '<span class="ped-plata"><b>'+plata(p.total)+'</b><small class="'+(p.cobrado?"si":"no")+'">'+(p.cobrado?"✓ cobrado":p.comprobante?"📎 comprobante a revisar":"sin cobrar")+'</small></span>'+
       '<span class="estado e-'+p.estado+'">'+nombreEstado(p)+'</span><span class="ped-flecha" aria-hidden="true">▾</span></button>'+(ab?'<div class="ped-detalle">'+tarjeta(p)+'</div>':"")+'</div>'}
   function pintarPedidos(){var H=hoy();
     /* estados con su cantidad (respetando el día elegido) */
     $("ped-estados").innerHTML=ESTADOS.map(function(e){var n=pedidos.filter(function(p){return pasaEstado(p,e[0])&&pasaDia(p,fDia)}).length;
-      return '<button type="button" class="est-b'+(e[0]==="nuevo"&&n?" urgente":"")+'" data-fest="'+e[0]+'" aria-pressed="'+(fEstado===e[0])+'"'+(e[2]?' title="'+e[2]+'"':"")+'>'+e[1]+' <b>'+n+'</b></button>'}).join("");
+      return '<button type="button" class="est-b'+((e[0]==="nuevo"||e[0]==="revisar")&&n?" urgente":"")+'" data-fest="'+e[0]+'" aria-pressed="'+(fEstado===e[0])+'"'+(e[2]?' title="'+e[2]+'"':"")+'>'+e[1]+' <b>'+n+'</b></button>'}).join("");
     /* días: los próximos con pedidos, más atajos */
     var prox={};pedidos.forEach(function(p){if(p.fecha_entrega>=H&&pasaEstado(p,fEstado))prox[p.fecha_entrega]=(prox[p.fecha_entrega]||0)+1});
     var op=[["todos","Todas las fechas"],["hoy","Hoy"],["manana","Mañana"],["semana","Próximos 7 días"]].concat(Object.keys(prox).sort().slice(0,8).map(function(f){return [f,fechaCorta(f)+" ("+prox[f]+")"]}),[["pasados","Ya pasados"]]);
@@ -416,7 +432,7 @@ details .dos{margin-top:8px}
   function adentro(){$("entrada").hidden=true;$("espera-mail").hidden=false;
     llamar("rpc/es_dueno",{cuerpo:{}}).then(function(ok){if(!S)return;
       if(!ok){location.replace("../?hola=1");return} /* cuenta de cliente: va derecho a la tienda, con la sesión iniciada */
-      $("titulo").textContent="Panel de la miga";$("salir").hidden=false;$("adentro").hidden=false;$("nav").hidden=false;$("espera-mail").hidden=true;traer()})
+      $("titulo").textContent="Panel de la miga";$("salir").hidden=false;$("b-ajustes").hidden=false;$("adentro").hidden=false;$("nav").hidden=false;$("espera-mail").hidden=true;traer()})
     .catch(function(){$("espera-mail").hidden=true;if(S){$("salir").hidden=false;$("adentro").hidden=false;$("falla").hidden=false;$("falla").textContent="No pudimos conectar. Revisá la conexión y recargá."}})}
   /* modos: entrar, crear, olvide (pedir el mail para cambiarla) y nueva (elegir contraseña nueva, viniendo del mail) */
   var modoActual="entrar",AQUI=location.origin+location.pathname;
@@ -504,6 +520,8 @@ details .dos{margin-top:8px}
     var fe=e.target.closest("[data-fest]"),fd=e.target.closest("[data-fdia]"),ab=e.target.closest("[data-abrir]");
     if(fe){fEstado=fe.dataset.fest;pintar();return}
     if(fd){fDia=fd.dataset.fdia;pintar();return}
+    var vc=e.target.closest("[data-comp]");
+    if(vc){var ventana=window.open("","_blank");llamarStorage(vc.dataset.comp).then(function(u){if(ventana)ventana.location=u;else location.href=u},function(){if(ventana)ventana.close();alert("No se pudo abrir el comprobante.")});return}
     if(ab){var id=ab.dataset.abrir;if(abiertos[id])delete abiertos[id];else abiertos[id]=1;pintar();return}
     if(es){if(es.dataset.estado==="cancelado"&&!confirm("¿Cancelar este pedido? Se liberan sus lugares."))return;
       abiertos[es.dataset.id]=1;cambiar(es.dataset.id,{estado:es.dataset.estado,cambio:new Date().toISOString()})}});
@@ -1036,6 +1054,28 @@ details .dos{margin-top:8px}
       el.querySelectorAll("[data-contar]").forEach(function(b){var fin=+b.dataset.contar,tipo=b.dataset.tipo,t0=performance.now();
         (function paso(t){var p=Math.min(1,(t-t0)/900),e=1-Math.pow(1-p,3),v=fin*e;b.textContent=tipo==="plata"?plata(Math.round(v)):tipo==="pct"?pct(v):nro(Math.round(v));if(p<1)requestAnimationFrame(paso)})(t0)})}};
 
+  /* =================== AJUSTES =================== */
+  var aj={},calTok=null;
+  function cargarAjustes(){return Promise.all([M.llamar("ajustes?select=clave,valor"),M.llamar("secretos?select=valor&clave=eq.calendario")]).then(function(r){aj={};r[0].forEach(function(x){aj[x.clave]=x.valor});calTok=(r[1][0]||{}).valor||null})}
+  M.vistas.ajustes=function(el){if(!aj.__ok){aj.__ok=1;el.innerHTML='<p class="chica">Cargando…</p>';cargarAjustes().then(function(){forzar=true;M.vistas.ajustes(el)},function(){el.innerHTML='<p class="error">No se pudieron cargar los ajustes.</p>'});return}
+    var v=function(k){return esc(typeof aj[k]==="string"?aj[k]:"")},wa=String(aj.whatsapp||"");
+    var cal=calTok?"https://ikptgfyfqvgrhhemvzly.supabase.co/functions/v1/calendario?k="+calTok:"";
+    el.innerHTML='<div class="g-titulo"><div><h2>Ajustes</h2><p class="chica">Lo que ven los clientes al pedir y pagar, y tu calendario.</p></div></div><div class="g-grid dos">'+
+      '<div class="tarjeta"><h2>WhatsApp de los pedidos</h2><p class="chica">A este número le llega el mensaje de cada pedido nuevo. Es tu WhatsApp de siempre: no cuesta nada.</p>'+
+      '<form class="g-form" data-ajuste="wa" style="grid-template-columns:minmax(0,1fr) auto"><div class="campo"><label for="aj-wa">Celular con característica</label><input class="g-in" id="aj-wa" name="wa" inputmode="tel" placeholder="Ej: 11 5555 5555" value="'+esc(wa?mostrarCel(wa):"")+'"></div><button class="boton" type="submit">Guardar</button></form>'+
+      (wa?'<p class="g-nota">Guardado como +'+esc(wa)+'. <a href="https://wa.me/'+esc(wa)+'" target="_blank" rel="noopener">Probar</a></p>':'<p class="g-nota" style="color:var(--rojo);font-weight:600">Sin número: hoy el cliente tiene que elegir a quién mandarle el pedido.</p>')+'</div>'+
+      '<div class="tarjeta"><h2>Datos para transferir</h2><p class="chica">Le aparecen al cliente cuando elige transferencia, con botón para copiar, y en su página de seguimiento, donde sube el comprobante.</p>'+
+      '<form class="g-form" data-ajuste="pago" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="campo"><label>Alias</label><input class="g-in" name="alias" value="'+v("pago_alias")+'" placeholder="Ej: migas.fausto"></div>'+
+      '<div class="campo"><label>CBU o CVU</label><input class="g-in" name="cbu" inputmode="numeric" value="'+v("pago_cbu")+'" placeholder="22 números"></div>'+
+      '<div class="campo"><label>Titular</label><input class="g-in" name="titular" value="'+v("pago_titular")+'"></div><div class="campo"><label>Banco o billetera</label><input class="g-in" name="banco" value="'+v("pago_banco")+'"></div>'+
+      '<button class="boton" type="submit" style="grid-column:1/-1">Guardar datos de pago</button></form></div>'+
+      '<div class="tarjeta ancho"><h2>📅 Tus entregas en el calendario</h2><p class="chica">Tus días de entrega aparecen solos en Google Calendar, con cada pedido, el cliente, el celular y si está cobrado. Se hace una sola vez.</p>'+
+      (cal?'<div class="g-acc" style="margin-top:12px"><a class="boton" target="_blank" rel="noopener" href="https://calendar.google.com/calendar/r?cid='+encodeURIComponent(cal.replace(/^https:/,"webcal:"))+'">Agregar a Google Calendar</a><button type="button" class="boton suave" data-copiarcal="'+esc(cal)+'">Copiar el enlace</button></div>'+
+        '<p class="g-nota">Si el botón no anda: en Google Calendar (en la compu) tocá el + de "Otros calendarios" → "Desde URL" → pegá el enlace. Google lo actualiza solo, pero tarda unas horas en mostrar los cambios: para algo urgente, cada pedido tiene su botón "Agregar a mi Google Calendar". El enlace es privado: no lo compartas.</p>':'<p class="g-nota">No se encontró el enlace del calendario.</p>')+'</div></div>'};
+  function mostrarCel(n){n=String(n);return n.indexOf("549")===0?n.slice(3):n}
+  function normalCel(t){var d=String(t).replace(/\D/g,"").replace(/^0+/,"");if(!d)return "";if(d.indexOf("54")===0){d=d.slice(2);if(d.charAt(0)==="9")d=d.slice(1)}
+    d=d.replace(/^(\d{2,4})15(\d{6,8})$/,function(m,a,b){return (a+b).length===10?a+b:m});return d.length===10?"549"+d:null}
+
   /* ---------- no pisar lo que se está escribiendo cuando el panel se refresca solo ---------- */
   Object.keys(M.vistas).forEach(function(k){var f=M.vistas[k];M.vistas[k]=function(el){var a=document.activeElement;
     if(!forzar&&a&&el.contains(a)&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))return;forzar=false;f(el)}});
@@ -1057,6 +1097,7 @@ details .dos{margin-top:8px}
     if((x=t.closest("[data-medida]"))){est.medida=x.dataset.medida;pintar();return}
     if((x=t.closest("[data-rk]"))){est.rk=x.dataset.rk;pintar();return}
     if((x=t.closest("[data-rkpor]"))){est.rkPor=x.dataset.rkpor;pintar();return}
+    if((x=t.closest("[data-copiarcal]"))){try{navigator.clipboard.writeText(x.dataset.copiarcal).then(function(){x.textContent="¡Copiado!"})}catch(er){}return}
     if((x=t.closest("[data-sugerido]"))){$("g-precio").value=x.dataset.sugerido;$("g-precio").focus();return}
     if((x=t.closest("[data-quitar]"))){if(!confirm("¿Quitar este ingrediente?"))return;
       var c=x.dataset.quitar==="receta"?"producto_receta?producto_id=eq."+encodeURIComponent(x.dataset.dueno)+"&insumo_id=eq."+x.dataset.ins:"insumo_formula?preparacion_id=eq."+x.dataset.dueno+"&insumo_id=eq."+x.dataset.ins;
@@ -1074,6 +1115,11 @@ details .dos{margin-top:8px}
       M.llamar(c,{metodo:"PATCH",cuerpo:{cantidad:q}}).then(recargar,fallo)}});
   caja.addEventListener("submit",function(e){e.preventDefault();var f=e.target,d=new FormData(f),b=f.querySelector('[type="submit"]');
     var hecho=function(){est.form=null;est.insumo=null;return recargar()},mal=function(er){if(b)b.disabled=false;fallo(er)};
+    if(f.dataset.ajuste==="wa"){var cel=normalCel(d.get("wa"));if(cel===null){alert("Revisá el celular: tiene que tener la característica, por ejemplo 11 5555 5555.");return}if(b)b.disabled=true;
+      M.llamar("ajustes?clave=eq.whatsapp",{metodo:"PATCH",cuerpo:{valor:cel}}).then(function(){aj.__ok=0;forzar=true;M.pintar()},mal);return}
+    if(f.dataset.ajuste==="pago"){var cbu=String(d.get("cbu")||"").replace(/\D/g,"");if(cbu&&cbu.length!==22){alert("El CBU o CVU tiene que tener 22 números.");return}if(b)b.disabled=true;
+      Promise.all([["pago_alias",String(d.get("alias")||"").trim()],["pago_cbu",cbu],["pago_titular",String(d.get("titular")||"").trim()],["pago_banco",String(d.get("banco")||"").trim()]].map(function(x){
+        return M.llamar("ajustes?clave=eq."+x[0],{metodo:"PATCH",cuerpo:{valor:x[1]}})})).then(function(){aj.__ok=0;forzar=true;M.pintar()},mal);return}
     if(f.dataset.precio){var p=Math.round(num(d.get("precio")));if(!(p>0)){alert("Poné un precio válido.");return}if(b)b.disabled=true;
       M.llamar("productos?id=eq."+encodeURIComponent(f.dataset.precio),{metodo:"PATCH",cuerpo:{precio:p,actualizado:new Date().toISOString()}}).then(recargar,mal);return}
     if(f.dataset.rinde){var r=Math.round(numSimple(d.get("rinde")));if(!(r>0)){alert("Poné cuántos sándwiches salen.");return}

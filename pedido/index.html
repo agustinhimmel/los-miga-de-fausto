@@ -68,6 +68,13 @@ h1,h2{font-family:var(--display);margin:0;line-height:1.08}
   .pasos li{font-size:17px}
   #espera{max-width:520px;margin:60px auto}
 }
+.tr-dato{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--pan);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.tr-dato span{font-size:12px;color:var(--tinta2);font-weight:600}
+.tr-dato b{overflow-wrap:anywhere}
+.tr-dato button{border:1px solid var(--linea);background:var(--papel);color:var(--tinta);border-radius:10px;padding:6px 10px;font-weight:700;font-size:13px;cursor:pointer}
+.boton.subir{background:var(--rojo);cursor:pointer}
+.aviso-pago{margin:10px 0 0;font-weight:700;color:var(--wa)}
+.pagado{background:var(--wa);color:#fff;border:0}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -89,6 +96,16 @@ h1,h2{font-family:var(--display);margin:0;line-height:1.08}
       <ul class="lista" id="items"></ul>
       <div class="total"><span id="pago"></span><span id="total"></span></div>
     </div>
+    <div class="tarjeta" id="pagar" hidden>
+      <h2 style="font-size:18px;margin-bottom:8px" id="pagar-t">Pagá por transferencia</h2>
+      <div id="pagar-datos">
+        <div class="tr-dato"><span>Alias</span><b id="p-alias"></b><button type="button" data-copiar="alias">Copiar</button></div>
+        <div class="tr-dato"><span>CBU / CVU</span><b id="p-cbu"></b><button type="button" data-copiar="cbu">Copiar</button></div>
+        <p class="chica" id="p-titular" style="margin:8px 0 12px"></p>
+        <label class="boton subir">📎 Subir el comprobante<input type="file" id="p-archivo" accept="image/*,application/pdf" hidden></label>
+      </div>
+      <p class="aviso-pago" id="p-aviso" aria-live="polite"></p>
+    </div>
     <a class="boton" id="wa" target="_blank" rel="noopener" hidden>Escribirnos por WhatsApp</a>
     <a class="boton suave" href="../">Volver a la tienda</a>
   </div>
@@ -102,7 +119,20 @@ h1,h2{font-family:var(--display);margin:0;line-height:1.08}
   var DL=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
   function fecha(f){var a=f.split("-"),d=new Date(+a[0],a[1]-1,+a[2]);return DL[d.getDay()]+" "+(+a[2])+"/"+(+a[1])}
   function nada(t){$("espera").hidden=false;$("todo").hidden=true;$("espera").innerHTML='<p class="chica"></p>';$("espera").firstChild.textContent=t}
-  var mapa=null,marca=null,reloj=null;
+  var mapa=null,marca=null,reloj=null,DATOS_PAGO={};
+  /* comprobante de transferencia: se sube a una carpeta con la clave del pedido y queda anotado */
+  function subirComprobante(clave,archivo,aviso,listo){
+    if(!archivo)return;if(archivo.size>6*1024*1024){aviso.textContent="La foto pesa demasiado (más de 6 MB). Probá con una captura de pantalla.";return}
+    var ext=(archivo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,5)||"jpg",ruta=clave+"/"+Date.now()+"."+ext;
+    aviso.textContent="Subiendo…";
+    fetch(BASE.url+"/storage/v1/object/comprobantes/"+ruta,{method:"POST",headers:{apikey:BASE.clave,Authorization:"Bearer "+BASE.clave,"Content-Type":archivo.type||"application/octet-stream","x-upsert":"false"},body:archivo})
+      .then(function(r){if(!r.ok)throw new Error("subida");
+        return fetch(BASE.url+"/rest/v1/rpc/registrar_comprobante",{method:"POST",headers:{apikey:BASE.clave,Authorization:"Bearer "+BASE.clave,"Content-Type":"application/json"},body:JSON.stringify({p_clave:clave,p_archivo:ruta})})})
+      .then(function(r){if(!r.ok)throw new Error("registro");aviso.textContent="✓ Recibimos tu comprobante. Te avisamos cuando confirmemos el pago.";if(listo)listo()})
+      .catch(function(){aviso.textContent="No se pudo subir. Probá de nuevo, o mandalo por WhatsApp."})}
+  function copiar(b,texto){var ok=function(){var t=b.textContent;b.textContent="¡Copiado!";setTimeout(function(){b.textContent=t},1500)};
+    try{navigator.clipboard.writeText(texto).then(ok,function(){})}catch(e){}}
+
   function pintarMapa(r){
     var hay=r&&window.L;$("mapa").hidden=!hay;$("mapa-nota").hidden=!hay;if(!hay)return;
     var p=[r.lat,r.lng];
@@ -133,6 +163,13 @@ h1,h2{font-family:var(--display);margin:0;line-height:1.08}
     $("pago").textContent=p.cobrado?"Total · ya pagado":"Total · "+(p.pago==="efectivo"?"en efectivo":"por transferencia");
     var w=String(p.whatsapp||"").replace(/\D/g,"");$("wa").hidden=!w;
     if(w)$("wa").href="https://wa.me/"+w+"?text="+encodeURIComponent("Hola! Te escribo por mi pedido N° "+p.numero);
+    /* pago por transferencia: datos, comprobante y confirmación */
+    var tr=p.transferencia||{},hay=tr.alias||tr.cbu,pg=$("pagar");DATOS_PAGO=tr;
+    pg.hidden=!(p.pago==="transferencia"&&p.estado!=="cancelado"&&(hay||p.cobrado));pg.classList.toggle("pagado",!!p.cobrado);
+    $("pagar-t").textContent=p.cobrado?"✓ Pago confirmado":"Transferí $"+p.total.toLocaleString("es-AR");
+    $("pagar-datos").hidden=!!(p.cobrado||p.comprobante);
+    $("p-alias").textContent=tr.alias||"—";$("p-cbu").textContent=tr.cbu||"—";$("p-titular").textContent=[tr.titular,tr.banco].filter(Boolean).join(" · ");
+    if(!$("p-aviso").dataset.fijo)$("p-aviso").textContent=p.cobrado?"Ya recibimos tu pago. ¡Gracias!":p.comprobante?"✓ Recibimos tu comprobante. Te avisamos cuando confirmemos el pago.":"";
     pintarMapa(p.reparto);
     clearTimeout(reloj);
     if(p.estado!=="entregado"&&p.estado!=="cancelado")reloj=setTimeout(buscar,p.estado==="en_camino"?10000:30000)}
@@ -142,6 +179,8 @@ h1,h2{font-family:var(--display);margin:0;line-height:1.08}
       headers:{apikey:BASE.clave,Authorization:"Bearer "+BASE.clave,"Content-Type":"application/json"}})
       .then(function(r){if(!r.ok)throw 0;return r.json()}).then(pintar)
       .catch(function(){if($("todo").hidden)nada("No pudimos conectar. Revisá tu conexión y recargá la página.");clearTimeout(reloj);reloj=setTimeout(buscar,15000)})}
+  $("pagar").addEventListener("click",function(e){var b=e.target.closest("[data-copiar]");if(b)copiar(b,DATOS_PAGO[b.dataset.copiar]||"")});
+  $("p-archivo").addEventListener("change",function(){var av=$("p-aviso");subirComprobante(clave,this.files[0],av,function(){$("pagar-datos").hidden=true;buscar()});this.value=""});
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clave))nada("Falta el enlace del pedido. Abrilo desde el mensaje que te mandamos.");
   else buscar();
 })();
