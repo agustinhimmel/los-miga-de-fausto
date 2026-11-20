@@ -535,6 +535,9 @@ fieldset.campo{border:0;margin:0;padding:0}
 (function(){
   /* Número de WhatsApp del negocio, solo dígitos con código de país (ej: 5491155555555). Vacío: WhatsApp deja elegir el contacto. */
   var WHATSAPP="";
+  /* Conexión con la base. En la maqueta queda en null y todo es de muestra; armar-sitio.py pone la dirección y la clave pública. */
+  var BASE={url:"https://ikptgfyfqvgrhhemvzly.supabase.co",clave:"sb_publishable_Mk65UgFQ0zPuubaz0SMXpg_IJTNdh16"}, conectada=false, cargando=false;
+  var ESCALA=[{desde:12,pct:5},{desde:24,pct:10}]; /* descuento por cantidad en sueltos */
   var TACHO='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
   var SELLO={top:"★ Top ventas",veggie:"☘ Veggie",esp:"◆ Especial"};
   function rep(id,n){var a=[];for(var i=0;i<n;i++)a.push(id);return a}
@@ -626,7 +629,7 @@ fieldset.campo{border:0;margin:0;padding:0}
       if(i.t==="g"){n+=c;sb+=c*i.p}
       else if(i.t==="c"){ct+=c*i.p;ca+=c*(brutoDe(i)-i.p);cu+=c*i.it.length}
       else{et+=c*i.p;ca+=c*(brutoDe(i)-i.p);cu+=c*(i.sand||0)}});
-    var pct=n>=24?10:n>=12?5:0, sd=Math.round(sb*pct/100), total=sb-sd+ct+et;
+    var pct=0;ESCALA.forEach(function(e){if(n>=e.desde&&e.pct>pct)pct=e.pct});var sd=Math.round(sb*pct/100), total=sb-sd+ct+et;
     return {sueltos:n,sueltosBruto:sb,pct:pct,sueltosDesc:sd,combosAhorro:ca,ahorro:ca+sd,sandwiches:n+cu,total:total,puntos:Math.floor(total/100),hay:total>0};
   }
 
@@ -658,10 +661,11 @@ fieldset.campo{border:0;margin:0;padding:0}
     $("lista-bebidas").innerHTML=h;
   }
   function pintarDias(){var h="";
+    if(BASE&&!conectada){$("dias").innerHTML='<p class="chica">'+(cargando?"Buscando los lugares…":"No pudimos cargar los días. Revisá tu conexión y recargá la página.")+"</p>";$("reloj").textContent="";return}
     DIAS.forEach(function(x){var s=estado(x);
       h+='<button type="button" class="dia '+s.k+'" data-dia="'+x.id+'" aria-pressed="'+(x.id===diaSel)+'"'+(s.q===0?" disabled":"")+'><b>'+(x.f?"<i>"+x.f+"</i>":"")+x.c+'</b><span class="medidor"><i style="width:'+Math.round(100*x.tom/x.cupo)+'%"></i></span><small>'+s.t+'</small></button>'});
     $("dias").innerHTML=h; reloj()}
-  function reloj(){var s=Math.max(0,Math.floor((cierre-Date.now())/1000)),p=function(n){return (n<10?"0":"")+n};
+  function reloj(){if(BASE){$("reloj").textContent="";return}var s=Math.max(0,Math.floor((cierre-Date.now())/1000)),p=function(n){return (n<10?"0":"")+n};
     $("reloj").textContent="Vie 27 cierra en "+Math.floor(s/86400)+" d "+p(Math.floor(s%86400/3600))+":"+p(Math.floor(s%3600/60))+":"+p(s%60)}
 
   function enCarro(){return ITEMS.filter(function(i){return cant(i.id)>0})}
@@ -694,8 +698,10 @@ fieldset.campo{border:0;margin:0;padding:0}
     $("barra-nota").textContent=pasa?"Para el "+d.c+" quedan "+lugar+" lugares. Sacá "+(x.sandwiches-lugar)+" o cambiá el día.":
       poco?"Te faltan "+(MINIMO-x.sandwiches)+" sándwiches para el mínimo de 2 docenas.":
       "Para el "+d.c+(x.ahorro?" · ahorrás "+plata(x.ahorro):"")+" · ★ "+x.puntos+" puntos";
-    $("barra-nota").classList.toggle("alerta",pasa||poco);
-    $("ir-pedido").disabled=pasa||poco;
+    var caida=BASE&&!conectada;
+    if(caida)$("barra-nota").textContent=cargando?"Buscando los lugares…":"No pudimos conectar. Recargá la página.";
+    $("barra-nota").classList.toggle("alerta",pasa||poco||(caida&&!cargando));
+    $("ir-pedido").disabled=pasa||poco||caida;
     pintarClub(x);
     if(vista==="producto")pintarSubtotal();
     if(vista==="pedido"){if(!x.hay||poco){ver("menu")}else{pintarCarro();pintarResumen(false)}}
@@ -743,7 +749,7 @@ fieldset.campo{border:0;margin:0;padding:0}
     renglones().forEach(function(r){l.push(r.t?"\n"+r.t.toUpperCase():"• "+r.a)});
     l.push("\nTotal: "+plata(x.total));return l.join("\n").replace(/^\n/,"")}
   function marcado(nombre){var e=document.querySelector('input[name="'+nombre+'"]:checked');return e?e.value:""}
-  function armarMensaje(){var l=["Hola! Quiero hacer un pedido 🥪","",listaTexto(),"","Para el "+dia().v];
+  function armarMensaje(nro){var l=["Hola! Quiero hacer un pedido 🥪"+(nro?" (pedido N° "+nro+")":""),"",listaTexto(),"","Para el "+dia().v];
     l.push(marcado("entrega")==="Envío"?"Envío a: "+$("direccion").value.trim():"Lo retiro");
     l.push("Pago: "+marcado("pago"),"Nombre: "+$("nombre").value.trim(),"Celular: "+$("telefono").value.trim());
     if($("aclaracion").value.trim())l.push("Aclaración: "+$("aclaracion").value.trim());
@@ -783,12 +789,37 @@ fieldset.campo{border:0;margin:0;padding:0}
     if(v==="menu"&&volverY){window.scrollTo(0,volverY);volverY=0}
     else{var t=document.querySelector(".tienda"); if(t.scrollIntoView) t.scrollIntoView({block:"start"})}}
 
+  /* ---- la base ---- */
+  function pedir(camino,cuerpo){
+    return fetch(BASE.url+"/rest/v1/"+camino,{method:cuerpo?"POST":"GET",body:cuerpo?JSON.stringify(cuerpo):undefined,
+      headers:{apikey:BASE.clave,Authorization:"Bearer "+BASE.clave,"Content-Type":"application/json"}})
+      .then(function(r){return r.json().then(function(j){if(!r.ok){var e=new Error(j&&j.code==="P0001"?j.message:"");e.dicho=!!(j&&j.code==="P0001");throw e}return j})})}
+  var DC=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],DL=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  function diaDeBase(r){var a=r.fecha.split("-"),f=new Date(+a[0],a[1]-1,+a[2]),dm=(+a[2])+"/"+(+a[1]);
+    return {id:r.fecha,fecha:r.fecha,c:DC[f.getDay()]+" "+dm,v:DL[f.getDay()]+" "+dm+(r.etiqueta?" ("+r.etiqueta+")":""),cupo:r.cupo,tom:Math.min(r.cupo,r.tomados),f:r.etiqueta||""}}
+  function ponerDias(filas){var l=filas.filter(function(r){return r.cupo>0}).map(diaDeBase);if(!l.length)return false;
+    DIAS=l;var libre=function(d){return d.cupo-d.tom>0};
+    var mio=DIAS.filter(function(d){return d.id===diaSel&&libre(d)})[0]||DIAS.filter(libre)[0]||DIAS[0];diaSel=mio.id;return true}
+  function cargarDias(){return pedir("rpc/dias_disponibles",{}).then(function(f){if(ponerDias(f)){pintarDias();refrescar()}})}
+  function cargar(){if(!BASE)return;cargando=true;pintarDias();refrescar();
+    Promise.all([pedir("productos?select=id,precio,activo"),pedir("rpc/dias_disponibles",{}),pedir("ajustes?select=clave,valor")]).then(function(r){
+      var p={},a={};r[0].forEach(function(x){p[x.id]=x});r[2].forEach(function(x){a[x.clave]=x.valor});
+      ITEMS=ITEMS.filter(function(i){var x=p[i.id];if(!x||!x.activo){delete q[i.id];return false}i.p=x.precio;return true});
+      if(a.minimo_sandwiches>0)MINIMO=a.minimo_sandwiches;
+      if(a.descuento_sueltos&&a.descuento_sueltos.length!==undefined)ESCALA=a.descuento_sueltos;
+      if(typeof a.whatsapp==="string")WHATSAPP=a.whatsapp.replace(/\D/g,"");
+      cargando=false;conectada=ponerDias(r[1]);
+      pintarDias();pintarCatalogo();refrescar();
+    }).catch(function(){cargando=false;conectada=false;pintarDias();refrescar()})}
+  function mostrarListo(msj){$("mensaje").textContent=msj;var w=$("abrir-wa");if(w)w.href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(msj);ver("listo")}
+
   /* ---- arranque ---- */
   try{var g0=JSON.parse(localStorage.getItem("miga-pedido3")||"null");
     if(g0)ITEMS.forEach(function(i){var c=Math.floor(g0[i.id]);if(c>0)q[i.id]=Math.min(96,c)})}catch(e){}
   try{var s0=JSON.parse(localStorage.getItem("miga-socio")||"null");if(s0&&s0.nombre)socio={nombre:String(s0.nombre).slice(0,40),mail:String(s0.mail||"").slice(0,80),cel:String(s0.cel||"").slice(0,20),ofertas:!!s0.ofertas,puntos:Math.max(0,Math.floor(s0.puntos)||0)}}catch(e){}
   pintarDias(); pintarCatalogo(); refrescar();
   setInterval(reloj,1000);
+  cargar();
 
   var RAIZ=document.documentElement;
   function temaActual(){var a=RAIZ.getAttribute("data-theme");if(a==="dark"||a==="light")return a;
@@ -832,7 +863,19 @@ fieldset.campo{border:0;margin:0;padding:0}
     else if($("telefono").value.replace(/\D/g,"").length<8)falta="Falta tu celular, con característica.";
     else if(marcado("entrega")==="Envío"&&!$("direccion").value.trim())falta="Falta la dirección para el envío.";
     $("error").hidden=!falta;$("error").textContent=falta;if(falta)return;
-    var msj=armarMensaje();$("mensaje").textContent=msj;$("abrir-wa").href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(msj);ver("listo")});
+    if(!BASE){mostrarListo(armarMensaje());return}
+    var boton=this.querySelector(".enviar"),texto=boton.textContent,items=[];
+    if(boton.disabled)return;
+    enCarro().forEach(function(i){items.push({id:i.id,c:cant(i.id)})});
+    boton.disabled=true;boton.textContent="Guardando tu pedido…";
+    pedir("rpc/crear_pedido",{p:{fecha:dia().fecha,nombre:$("nombre").value.trim(),telefono:$("telefono").value.trim(),
+      entrega:marcado("entrega")==="Envío"?"envio":"retiro",direccion:$("direccion").value.trim(),pago:marcado("pago").toLowerCase(),
+      aclaracion:$("aclaracion").value.trim(),items:items}}).then(function(r){
+        var msj=armarMensaje(r.numero);boton.disabled=false;boton.textContent=texto;
+        mostrarListo(msj);q={};$("aclaracion").value="";refrescar();cargarDias().catch(function(){});
+      }).catch(function(e){boton.disabled=false;boton.textContent=texto;
+        $("error").hidden=false;$("error").textContent=e.dicho?e.message:"No pudimos guardar tu pedido. Revisá tu conexión y probá de nuevo.";
+        if(e.dicho)cargarDias().catch(function(){})})});
 })();
 </script>
 </body>
