@@ -104,16 +104,19 @@ details .dos{margin-top:8px}
   </header>
 
   <form class="tarjeta" id="entrada" hidden novalidate>
-    <h2>Entrar</h2>
+    <h2 id="entrada-t">Entrar</h2>
+    <div class="campo" id="campo-nombre" hidden><label for="nombre">Tu nombre</label><input id="nombre" autocomplete="name"></div>
     <div class="campo"><label for="mail">Mail</label><input id="mail" type="email" autocomplete="username" inputmode="email"></div>
     <div class="campo"><label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password"></div>
     <p class="error" id="entrada-error" hidden></p>
-    <button class="boton" type="submit">Entrar</button>
+    <p class="chica" id="entrada-ok" style="margin-bottom:10px" hidden></p>
+    <button class="boton" type="submit" id="entrada-b">Entrar</button>
+    <button class="boton suave" type="button" id="modo" style="margin-top:8px">Es mi primera vez: crear mi cuenta</button>
   </form>
 
   <div class="tarjeta" id="sin-permiso" hidden>
-    <h2>Este usuario no tiene permiso</h2>
-    <p class="chica">Entraste bien, pero tu usuario no está anotado como dueño. Avisale a Agustín.</p>
+    <h2>Tu cuenta ya está creada</h2>
+    <p class="chica">Falta que Agustín la habilite. Avisale, y cuando te diga que está, volvé a entrar.</p>
   </div>
 
   <main id="adentro" hidden>
@@ -293,9 +296,29 @@ details .dos{margin-top:8px}
       if(!ok){$("sin-permiso").hidden=false;return}
       $("adentro").hidden=false;$("nav").hidden=false;traer()})
     .catch(function(){if(S){$("adentro").hidden=false;$("falla").hidden=false;$("falla").textContent="No pudimos conectar. Revisá la conexión y recargá."}})}
-  $("entrada").addEventListener("submit",function(e){e.preventDefault();var b=this.querySelector("button");b.disabled=true;$("entrada-error").hidden=true;
-    ficha("password",{email:$("mail").value.trim(),password:$("clave").value}).then(function(){b.disabled=false;$("clave").value="";adentro()},
-      function(er){b.disabled=false;$("entrada-error").hidden=false;$("entrada-error").textContent=er.estado?"El mail o la contraseña no coinciden.":"No pudimos conectar. Revisá la conexión."})});
+  var creando=false;
+  function modo(c){creando=c;$("entrada-t").textContent=c?"Crear mi cuenta":"Entrar";$("campo-nombre").hidden=!c;$("entrada-b").textContent=c?"Crear mi cuenta":"Entrar";
+    $("modo").textContent=c?"Ya tengo cuenta: entrar":"Es mi primera vez: crear mi cuenta";$("clave").autocomplete=c?"new-password":"current-password";$("entrada-error").hidden=true}
+  $("modo").addEventListener("click",function(){$("entrada-ok").hidden=true;modo(!creando)});
+  $("entrada").addEventListener("submit",function(e){e.preventDefault();var b=$("entrada-b"),m=$("mail").value.trim(),c=$("clave").value,falta="";
+    var mal=function(t){b.disabled=false;$("entrada-error").hidden=false;$("entrada-error").textContent=t};
+    $("entrada-error").hidden=true;$("entrada-ok").hidden=true;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m))falta="Revisá el mail.";
+    else if(creando&&!$("nombre").value.trim())falta="Falta tu nombre.";
+    else if(creando&&c.length<8)falta="La contraseña tiene que tener 8 letras o números como mínimo.";
+    else if(!c)falta="Falta la contraseña.";
+    if(falta){mal(falta);return}
+    b.disabled=true;
+    if(!creando){ficha("password",{email:m,password:c}).then(function(){b.disabled=false;$("clave").value="";adentro()},
+      function(er){mal(er.estado?"El mail o la contraseña no coinciden.":"No pudimos conectar. Revisá la conexión.")});return}
+    fetch(BASE.url+"/auth/v1/signup",{method:"POST",headers:{apikey:BASE.clave,"Content-Type":"application/json"},
+      body:JSON.stringify({email:m,password:c,data:{nombre:$("nombre").value.trim().slice(0,60)}})})
+      .then(function(r){return r.json().then(function(j){
+        if(!r.ok){mal(r.status===429?"Se hicieron muchos intentos. Esperá un rato y probá de nuevo.":r.status===422||r.status===400?"Ese mail ya tiene cuenta, o la contraseña es muy fácil. Probá entrar o cambiá la contraseña.":"No se pudo crear la cuenta.");return}
+        b.disabled=false;$("clave").value="";modo(false);
+        if(j.access_token){guardar(j);adentro()}
+        else{$("entrada-ok").hidden=false;$("entrada-ok").textContent="Cuenta creada. Te mandamos un mail para confirmarla: abrilo y después entrá acá."}})})
+      .catch(function(){mal("No pudimos conectar. Revisá la conexión.")})});
   $("salir").addEventListener("click",afuera);
   document.addEventListener("click",function(e){
     var ir=e.target.closest("[data-ir]"),d=e.target.closest("[data-dia]"),f=e.target.closest("[data-filtro]"),es=e.target.closest("[data-estado]");
