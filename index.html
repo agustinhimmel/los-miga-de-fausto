@@ -93,7 +93,7 @@ body,.tienda,.ficha,.como,.dia,.fila,.combo{transition:background-color .35s,bor
 .punto{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rojo);color:var(--rojo);margin-right:7px}
 .dias-fila{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 6px;scrollbar-width:none}
 .dias-fila::-webkit-scrollbar{display:none}
-.dia{flex:none;width:112px;display:grid;gap:7px;border:1.5px solid var(--linea);background:var(--pan);border-radius:14px;padding:10px;text-align:left}
+.dia{flex:none;width:118px;display:grid;gap:7px;border:1.5px solid var(--linea);background:var(--pan);border-radius:14px;padding:10px;text-align:left}
 .dia[aria-pressed="true"]{border-color:var(--tinta);background:var(--papel);box-shadow:inset 0 0 0 1px var(--tinta)}
 .dia b{font-size:14px;line-height:1.15}
 .dia b i{display:block;font-style:normal;font-size:11px;font-weight:700;color:var(--rojo);text-transform:uppercase;letter-spacing:.04em}
@@ -127,11 +127,22 @@ body,.tienda,.ficha,.como,.dia,.fila,.combo{transition:background-color .35s,bor
 .caja-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px}
 .caja-cab b{font-family:var(--display);font-size:16px}
 .caja-cab span{font-variant-numeric:tabular-nums;font-weight:700}
-.huecos{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px}
-.hueco{aspect-ratio:2/3;border-radius:3px;border:1.5px dashed var(--sobre2);background:none;padding:0;opacity:.5}
-.hueco.lleno{border:0;opacity:1;display:grid;grid-template-columns:3fr 2fr 3fr 2fr 3fr;overflow:hidden;background:var(--miga)}
-.hueco i,.tira i{display:block}
-.hueco.nuevo{animation:caer .28s cubic-bezier(.3,1.5,.5,1)}
+.tira i{display:block}
+.caja-cab s{font-weight:500;opacity:.75;margin-right:6px}
+.caja-barra{position:relative;height:10px;border-radius:99px;background:var(--fuerte2);margin-top:16px}
+.caja-barra i{display:block;height:100%;border-radius:99px;background:var(--mostaza);transition:width .3s}
+.caja-barra span{position:absolute;top:-15px;font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--sobre2);white-space:nowrap;transform:translateX(-50%)}
+.caja-barra span.fin{transform:translateX(-100%)}
+.caja-barra span.si{color:var(--mostaza)}
+.caja-barra em{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--fuerte)}
+.caja-msj{font-size:13px;font-weight:700;line-height:1.3}
+.caja-msj b{color:var(--mostaza)}
+.elegidos{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:6px 2px 2px}
+.elegidos::-webkit-scrollbar{display:none}
+.elegido{flex:none;position:relative;width:40px;height:40px;border-radius:50%;border:2px solid var(--sobre);padding:0;background:none}
+.elegido img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.elegido b{position:absolute;right:-6px;top:-6px;min-width:19px;height:19px;border-radius:99px;background:var(--mostaza);color:#2a2205;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.elegido.nuevo{animation:caer .28s cubic-bezier(.3,1.5,.5,1)}
 @keyframes caer{from{transform:translateY(-10px) scale(.7);opacity:0}to{transform:none;opacity:1}}
 .caja-pie{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--sobre2)}
 .caja-pie button{border:0;background:none;color:var(--sobre);font-weight:700;font-size:12px;padding:0;text-decoration:underline}
@@ -309,8 +320,10 @@ fieldset.campo{border:0;margin:0;padding:0}
         <p>Elegí gusto por gusto. Un toque suma uno.</p>
         <div class="caja" id="caja">
           <div class="caja-cab"><b id="caja-titulo">Tu caja</b><span id="caja-total"></span></div>
-          <div class="huecos" id="huecos"></div>
-          <div class="caja-pie"><span id="caja-oferta"></span><button type="button" id="vaciar">Vaciar</button></div>
+          <div class="caja-barra"><i id="caja-avance"></i><em></em><span id="marca12" style="left:50%">12 · 5% menos</span><span id="marca24" class="fin" style="left:100%">24 · 10% menos</span></div>
+          <div class="caja-msj" id="caja-msj"></div>
+          <div class="elegidos" id="huecos"></div>
+          <div class="caja-pie" id="caja-pie"><span>Tocá una foto para sacar uno.</span><button type="button" id="vaciar">Vaciar</button></div>
         </div>
         <div class="fichas" id="fichas"></div>
 
@@ -443,7 +456,7 @@ fieldset.campo{border:0;margin:0;padding:0}
     {id:"c12s",n:"Docena surtida",d:"3 de cada clásico: jamón y queso, tomate, huevo y pollo.",p:24000,it:SURT},
     {id:"c12e",n:"Docena especial",d:"4 de berenjena, 4 de ternera y 4 de vitel toné.",p:30000,it:ESP},
     {id:"c24",n:"Clásica + especial",d:"Una docena de jamón y queso y una docena especial.",p:49900,it:rep("jq",12).concat(ESP)},
-    {id:"c48",n:"Caja fiesta",d:"4 docenas: 2 clásicas, 1 surtida y 1 especial. Para 20 personas.",p:89900,it:rep("jq",24).concat(SURT,ESP)},
+    {id:"c48",n:"Caja fiesta",d:"4 docenas: 2 clásicas, 1 surtida y 1 especial. Para 20 personas.",p:89900,it:rep("jq",24).concat(SURT,ESP),tag:"Despedidas de año"},
     {id:"c6",n:"Media docena clásica",d:"6 de jamón y queso.",p:11500,it:rep("jq",6)}
   ];
   var EXTRAS=[
@@ -458,11 +471,16 @@ fieldset.campo{border:0;margin:0;padding:0}
   ];
   var CANJES=[{n:"Media docena clásica",pts:2400},{n:"Docena clásica",pts:4500},{n:"Docena especial",pts:6000}];
   var DIAS=[{id:"v27",c:"Vie 27/11",v:"viernes 27/11",cupo:120,tom:64},
-            {id:"s28",c:"Sáb 28/11",v:"sábado 28/11",cupo:120,tom:103},
-            {id:"v4",c:"Vie 4/12",v:"viernes 4/12",cupo:120,tom:12},
-            {id:"x24",c:"Jue 24/12",v:"jueves 24/12 (Navidad)",cupo:200,tom:38,f:"Navidad"},
-            {id:"x31",c:"Jue 31/12",v:"jueves 31/12 (Año Nuevo)",cupo:200,tom:21,f:"Año Nuevo"}];
-  var caja=[], combos={}, extras={}, diaSel="v27", socio=null, ultimo=-1;
+            {id:"s28",c:"Sáb 28/11",v:"sábado 28/11 (final de la Libertadores)",cupo:150,tom:118,f:"Final Libertadores"},
+            {id:"v4",c:"Vie 4/12",v:"viernes 4/12",cupo:120,tom:22},
+            {id:"s5",c:"Sáb 5/12",v:"sábado 5/12",cupo:120,tom:35},
+            {id:"v11",c:"Vie 11/12",v:"viernes 11/12",cupo:120,tom:18},
+            {id:"s12",c:"Sáb 12/12",v:"sábado 12/12 (final del Clausura)",cupo:150,tom:41,f:"Final Clausura"},
+            {id:"v18",c:"Vie 18/12",v:"viernes 18/12",cupo:120,tom:30},
+            {id:"s19",c:"Sáb 19/12",v:"sábado 19/12",cupo:120,tom:44},
+            {id:"x24",c:"Jue 24/12",v:"jueves 24/12 (Nochebuena)",cupo:240,tom:96,f:"Nochebuena"},
+            {id:"x31",c:"Jue 31/12",v:"jueves 31/12 (fin de año)",cupo:240,tom:52,f:"Fin de año"}];
+  var caja=[], combos={}, extras={}, diaSel="v27", socio=null, ultimo="";
   var cierre=Date.now()+((24+5)*3600+17*60)*1000;
   var $=function(id){return document.getElementById(id)};
   var plata=function(n){return "$"+n.toLocaleString("es-AR")};
@@ -512,21 +530,23 @@ fieldset.campo{border:0;margin:0;padding:0}
       h+='<div class="fila"><div><h4>'+e.n+'</h4><p>'+e.d+'</p><span class="precio">'+plata(e.p)+'</span></div>'+
         '<div class="mas-menos vacio" id="mm-'+e.id+'"><button type="button" class="menos" data-extra="'+e.id+'" data-d="-1" aria-label="Sacar '+e.n+'">−</button><output id="q-'+e.id+'">0</output><button type="button" class="mas" data-extra="'+e.id+'" data-d="1" aria-label="Sumar '+e.n+'">+</button></div></div>'});
     $("extras").innerHTML=h}
-  function pintarCaja(){
-    var huecos=Math.max(12,12*Math.ceil(caja.length/12)),h="";
-    for(var i=0;i<huecos;i++){
-      if(i<caja.length){var g=POR_ID[caja[i]];
-        h+='<button type="button" class="hueco lleno'+(i===ultimo?" nuevo":"")+'" data-quitar="'+i+'" aria-label="Sacar '+g.n+'">'+franjas(g.c)+'</button>'}
-      else h+='<span class="hueco"></span>';
-    }
+  function pintarCaja(){var h="";
+    agrupar().forEach(function(k){
+      h+='<button type="button" class="elegido'+(k.g.id===ultimo?" nuevo":"")+'" data-quitar="'+k.g.id+'" aria-label="Sacar uno de '+k.g.n+'"><img src="img/foto-'+k.g.id+'.jpg" alt=""><b>'+k.n+'</b></button>'});
     $("huecos").innerHTML=h; ultimo=-1}
 
   function refrescar(){
     var x=cuenta(); pintarCaja();
-    $("caja-titulo").textContent=caja.length?"Tu caja · "+caja.length:"Tu caja";
-    $("caja-total").textContent=caja.length?plata(x.cajaBruto-x.cajaDesc):"";
-    $("caja-oferta").textContent=x.cajaPct===10?"Tenés 10% menos":x.cajaPct===5?"Tenés 5% menos · con 24, 10%":caja.length?"Con 12, 5% menos · faltan "+(12-caja.length):"Con 12, 5% menos · con 24, 10%";
-    $("vaciar").hidden=!caja.length;
+    var n=caja.length;
+    $("caja-titulo").textContent=n?"Tu caja · "+n+(n===1?" sándwich":" sándwiches"):"Tu caja";
+    $("caja-total").innerHTML=n?(x.cajaDesc?"<s>"+plata(x.cajaBruto)+"</s>":"")+plata(x.cajaBruto-x.cajaDesc):"";
+    $("caja-avance").style.width=Math.min(100,100*n/24)+"%";
+    $("marca12").classList.toggle("si",n>=12); $("marca24").classList.toggle("si",n>=24);
+    $("caja-msj").innerHTML=n===0?"Tocá un gusto para empezar.":
+      n<12?"Agregá <b>"+(12-n)+" más</b> y ahorrás 5%.":
+      n<24?"Ahorrás <b>"+plata(x.cajaDesc)+"</b>. Agregá <b>"+(24-n)+" más</b> y ahorrás 10%.":
+      "Ahorrás <b>"+plata(x.cajaDesc)+"</b> con el 10%.";
+    $("caja-pie").hidden=!n;
     GUSTOS.forEach(function(g){var n=cuantos(caja,g.id);
       $("n-"+g.id).hidden=n===0;$("n-"+g.id).textContent=n;$("menos-"+g.id).hidden=n===0;$("ficha-"+g.id).classList.toggle("con",n>0)});
     COMBOS.forEach(function(c){var q=combos[c.id]||0;$("q-"+c.id).textContent=q;$("mm-"+c.id).classList.toggle("vacio",q===0);$("combo-"+c.id).classList.toggle("con",q>0)});
@@ -535,7 +555,7 @@ fieldset.campo{border:0;margin:0;padding:0}
     $("barra").hidden=!x.hay;
     $("barra-cant").textContent=x.sandwiches?"Pedir "+x.sandwiches+(x.sandwiches===1?" sándwich":" sándwiches"):"Hacer el pedido";
     $("barra-total").textContent=plata(x.total);
-    $("barra-nota").textContent=pasa?"Para el "+d.c+" quedan "+lugar+" lugares. Sacá "+(x.sandwiches-lugar)+" o cambiá el día.":"Para el "+d.c+" · ★ sumás "+x.puntos+" puntos";
+    $("barra-nota").textContent=pasa?"Para el "+d.c+" quedan "+lugar+" lugares. Sacá "+(x.sandwiches-lugar)+" o cambiá el día.":"Para el "+d.c+(x.combosAhorro+x.cajaDesc?" · ahorrás "+plata(x.combosAhorro+x.cajaDesc):"")+" · ★ "+x.puntos+" puntos";
     $("barra-nota").classList.toggle("alerta",pasa);
     $("ir-pedido").disabled=pasa;
     pintarClub(x);
@@ -622,8 +642,8 @@ fieldset.campo{border:0;margin:0;padding:0}
     extras[id]=Math.max(0,Math.min(24,(extras[id]||0)+Number(b.dataset.d)));refrescar()});
   $("fichas").addEventListener("click",function(e){var s=e.target.closest("[data-sumar]"),m=e.target.closest("[data-sacar]");
     if(m){var i=caja.lastIndexOf(m.dataset.sacar);if(i>=0)caja.splice(i,1);refrescar()}
-    else if(s&&caja.length<96){caja.push(s.dataset.sumar);ultimo=caja.length-1;refrescar()}});
-  $("huecos").addEventListener("click",function(e){var b=e.target.closest("[data-quitar]");if(!b)return;caja.splice(Number(b.dataset.quitar),1);refrescar()});
+    else if(s&&caja.length<96){caja.push(s.dataset.sumar);ultimo=s.dataset.sumar;refrescar()}});
+  $("huecos").addEventListener("click",function(e){var b=e.target.closest("[data-quitar]");if(!b)return;var i=caja.lastIndexOf(b.dataset.quitar);if(i>=0)caja.splice(i,1);refrescar()});
   $("vaciar").addEventListener("click",function(){caja=[];refrescar()});
   document.querySelectorAll("[data-ir]").forEach(function(b){b.addEventListener("click",function(){var z=$(b.dataset.ir);if(z&&z.scrollIntoView)z.scrollIntoView({block:"start",behavior:"smooth"})})});
   document.querySelectorAll("[data-ver]").forEach(function(b){b.addEventListener("click",function(){ver(b.dataset.ver)})});
