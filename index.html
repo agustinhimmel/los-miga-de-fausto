@@ -329,7 +329,7 @@ fieldset.campo{border:0;margin:0;padding:0}
 .enviar{border:0;border-radius:18px;background:var(--wa);color:#fff;padding:15px;font-weight:700;font-size:16px}
 .principal{border:0;border-radius:18px;background:var(--rojo);color:#fff;padding:15px;font-weight:700;font-size:16px}
 .error{color:var(--rojo);font-weight:600;font-size:14px;margin:0}
-.mensaje{white-space:pre-wrap;background:var(--pan);border:1px solid var(--linea);border-radius:4px 16px 16px 16px;padding:14px;font-size:14px;margin:0;font-family:var(--texto)}
+.mensaje{white-space:pre-wrap;max-height:280px;overflow:auto;background:var(--pan);border:1px solid var(--linea);border-radius:4px 16px 16px 16px;padding:14px;font-size:14px;margin:0;font-family:var(--texto)}
 .chica{font-size:13px;color:var(--tinta2);margin:0}
 .puntos{border-radius:18px;background:var(--fuerte);color:var(--sobre);padding:16px;display:grid;gap:6px}
 .puntos span{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sobre2)}
@@ -552,7 +552,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
 
       <section class="como" aria-label="Cómo se pide">
         <h2>Cómo se pide</h2>
-        <ol><li>Elegí el día</li><li>Armá tu pedido</li><li>Pedí por WhatsApp</li></ol>
+        <ol><li>Elegí el día</li><li>Armá tu pedido</li><li>Confirmá y listo</li></ol>
         <p>Pedido mínimo: 2 docenas. Pagás por transferencia o en efectivo.</p>
       </section>
 
@@ -659,8 +659,8 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
       </fieldset>
       <div class="campo"><label for="aclaracion">Aclaraciones (opcional)</label><textarea id="aclaracion" rows="2" placeholder="Ej: sin tomate en la mitad"></textarea></div>
       <p class="error" id="error" hidden></p>
-      <button class="enviar" type="submit">Enviar pedido por WhatsApp</button>
-      <p class="chica">El pedido queda confirmado cuando te respondemos.</p>
+      <button class="enviar" type="submit">Hacer el pedido</button>
+      <p class="chica">Te confirmamos el pedido por WhatsApp.</p>
     </form>
 
     <div id="vista-cuenta" class="pantalla" hidden>
@@ -695,10 +695,10 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     </div>
 
     <div id="vista-listo" class="pantalla" hidden>
-      <h2>¡Listo! Mandalo por WhatsApp</h2>
-      <p class="chica">Se abre WhatsApp con este mensaje ya escrito. Tocá enviar y te confirmamos.</p>
+      <h2 id="listo-t">¡Pedido recibido!</h2>
+      <p class="chica" id="listo-s">Ya nos llegó. Te confirmamos por WhatsApp al celular que pusiste.</p>
       <pre class="mensaje" id="mensaje"></pre>
-      <a class="enviar" id="abrir-wa" href="https://wa.me/" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Abrir WhatsApp</a>
+      <a class="secundario" id="abrir-wa" href="https://wa.me/" target="_blank" rel="noopener" hidden style="display:block;text-align:center;text-decoration:none;color:inherit">¿Dudas? Escribinos por WhatsApp</a>
       <div class="transferir" id="transferir" hidden>
         <h3>Para pagar por transferencia</h3>
         <p class="tr-total">Transferí <b id="tr-total"></b></p>
@@ -949,7 +949,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     renglones().forEach(function(r){l.push(r.t?"\n"+r.t.toUpperCase():"• "+r.a)});
     l.push("\nTotal: "+plata(x.total));return l.join("\n").replace(/^\n/,"")}
   function marcado(nombre){var e=document.querySelector('input[name="'+nombre+'"]:checked');return e?e.value:""}
-  function armarMensaje(nro){var l=["Hola! Quiero hacer un pedido 🥪"+(nro?" (pedido N° "+nro+")":""),"",listaTexto(),"","Para el "+dia().v];
+  function armarMensaje(nro){var l=[nro?"Pedido N° "+nro:"Hola! Quiero hacer un pedido 🥪","",listaTexto(),"","Para el "+dia().v];
     l.push(marcado("entrega")==="Envío"?"Envío a: "+$("direccion").value.trim():"Lo retiro");
     l.push("Pago: "+marcado("pago")+(marcado("pago")==="Transferencia"&&PAGO.alias?" (al alias "+PAGO.alias+")":""),"Nombre: "+$("nombre").value.trim(),"Celular: "+$("telefono").value.trim());
     if($("aclaracion").value.trim())l.push("Aclaración: "+$("aclaracion").value.trim());
@@ -1024,9 +1024,9 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
       .catch(function(){aviso.textContent="No se pudo subir. Probá de nuevo, o mandalo por WhatsApp."})}
   function copiar(b,texto){var ok=function(){var t=b.textContent;b.textContent="¡Copiado!";setTimeout(function(){b.textContent=t},1500)};
     try{navigator.clipboard.writeText(texto).then(ok,function(){})}catch(e){}}
-  function mostrarListo(msj,clave,total,transfiere){var tb=$("transferir");if(tb){tb.hidden=!(transfiere&&clave&&(PAGO.alias||PAGO.cbu));
+  function mostrarListo(msj,clave,total,transfiere,numero){if(BASE&&numero){$("listo-t").textContent="¡Pedido N° "+numero+" recibido!"}var tb=$("transferir");if(tb){tb.hidden=!(transfiere&&clave&&(PAGO.alias||PAGO.cbu));
     if(!tb.hidden){$("tr-total").textContent=plata(total);$("tr-alias").textContent=PAGO.alias||"—";$("tr-cbu").textContent=PAGO.cbu||"—";$("tr-titular").textContent=[PAGO.titular,PAGO.banco].filter(Boolean).join(" · ")||"—";$("tr-aviso").textContent="";tb.dataset.clave=clave}}
-    $("mensaje").textContent=msj;var sg=$("seguir");sg.hidden=!clave;$("seguir-muestra").hidden=!!clave;if(clave)sg.href="pedido/?c="+clave;var w=$("abrir-wa");if(w)w.href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(msj);ver("listo")}
+    $("mensaje").textContent=msj;var sg=$("seguir");sg.hidden=!clave;$("seguir-muestra").hidden=!!clave;if(clave)sg.href="pedido/?c="+clave;var w=$("abrir-wa");if(w){w.hidden=!WHATSAPP;w.href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent((BASE?"Hola! Te escribo por mi pedido. ":"")+msj)}ver("listo")}
 
   /* ---- arranque ---- */
   try{var g0=JSON.parse(localStorage.getItem("miga-pedido3")||"null");
@@ -1114,7 +1114,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
       entrega:marcado("entrega")==="Envío"?"envio":"retiro",direccion:$("direccion").value.trim(),pago:marcado("pago").toLowerCase(),
       aclaracion:$("aclaracion").value.trim(),items:items}}).then(function(r){
         var msj=armarMensaje(r.numero);boton.disabled=false;boton.textContent=texto;
-        mostrarListo(msj,r.clave,r.total,marcado("pago")==="Transferencia");q={};$("aclaracion").value="";refrescar();cargarDias().catch(function(){});
+        mostrarListo(msj,r.clave,r.total,marcado("pago")==="Transferencia",r.numero);q={};$("aclaracion").value="";refrescar();cargarDias().catch(function(){});
       }).catch(function(e){boton.disabled=false;boton.textContent=texto;
         $("error").hidden=false;$("error").textContent=e.dicho?e.message:"No pudimos guardar tu pedido. Revisá tu conexión y probá de nuevo.";
         if(e.dicho)cargarDias().catch(function(){})})});
