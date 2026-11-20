@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Los Miga de Fausto</title>
+<meta name="description" content="Sándwiches de miga caseros, triples y hechos a pedido.">
+<meta property="og:title" content="Los Miga de Fausto">
+<meta property="og:description" content="Sándwiches de miga caseros, triples y hechos a pedido.">
+<meta property="og:image" content="img/foto-bandeja.jpg">
+<meta name="theme-color" content="#d5202c">
+<link rel="icon" type="image/png" href="img/fausto.png">
+<link rel="apple-touch-icon" href="img/fausto.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: una columna de celular. Arriba la marca; después el camino en 3 pasos: día, qué llevás (combos, caja armada, para acompañar), pedir.
+   La caja armada es una tira angosta que queda pegada arriba mientras elegís gustos. Al lado o debajo, las notas para Agustín. */
+:root{
+  --pan:#fbf8f6; --papel:#ffffff; --tinta:#2b1416; --tinta2:#6d5557; --linea:#ebe0de;
+  --rojo:#d5202c; --rojo-suave:#fde9e9; --mostaza:#f2c230; --verde:#1f6b4f; --wa:#128c4a;
+  --fuerte:#b3121f; --fuerte2:#8a0d17; --sobre:#fff6f4; --sobre2:#f6c9c9; --miga:#fffdf5;
+  --sombra:0 14px 34px -14px rgba(70,15,20,.38);
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --texto:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --pan:#120a0b; --papel:#1c1012; --tinta:#f8f0ef; --tinta2:#b9a3a4; --linea:#38262a;
+  --rojo:#ff5a63; --rojo-suave:#3a171b; --mostaza:#f2c230; --verde:#7fd0ac; --wa:#2fbf71;
+  --fuerte:#7d0c15; --fuerte2:#560810; --sobre:#fff6f4; --sobre2:#e9b5b5; --miga:#f6f1e0;
+  --sombra:0 14px 34px -14px rgba(0,0,0,.75); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --pan:#120a0b; --papel:#1c1012; --tinta:#f8f0ef; --tinta2:#b9a3a4; --linea:#38262a;
+  --rojo:#ff5a63; --rojo-suave:#3a171b; --mostaza:#f2c230; --verde:#7fd0ac; --wa:#2fbf71;
+  --fuerte:#7d0c15; --fuerte2:#560810; --sobre:#fff6f4; --sobre2:#e9b5b5; --miga:#f6f1e0;
+  --sombra:0 14px 34px -14px rgba(0,0,0,.75); color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--pan);color:var(--tinta);font-family:var(--texto);font-size:16px;line-height:1.45;margin:0}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--mostaza);outline-offset:2px}
+.pagina{display:grid;gap:40px;grid-template-columns:minmax(0,1fr);max-width:1040px;margin:0 auto;padding-block:24px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.pagina{max-width:480px}
+.tienda{background:var(--papel);border:1px solid var(--linea);border-radius:28px;box-shadow:var(--sombra);overflow:clip;min-width:0}
+body,.tienda,.ficha,.como,.dia,.fila,.combo{transition:background-color .35s,border-color .35s,color .35s}
+
+/* arriba */
+.arriba{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 0}
+.cuenta-btn{border:1.5px solid var(--linea);background:var(--pan);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cuenta-btn b{color:var(--rojo)}
+.tema{position:relative;flex:none;width:68px;height:36px;border-radius:999px;border:1.5px solid var(--linea);background:var(--pan);padding:0 10px;display:flex;align-items:center;justify-content:space-between;color:var(--tinta2)}
+.tema svg{width:16px;height:16px;position:relative;z-index:1;transition:color .3s,transform .5s}
+.tema .perilla{position:absolute;top:3px;left:3px;width:27px;height:27px;border-radius:50%;background:var(--papel);box-shadow:0 1px 5px rgba(0,0,0,.3);transition:transform .38s cubic-bezier(.4,1.5,.5,1)}
+.tema[aria-checked="true"] .perilla{transform:translateX(32px)}
+.tema[aria-checked="false"] .sol{color:var(--rojo);transform:rotate(90deg)}
+.tema[aria-checked="true"] .luna{color:var(--mostaza);transform:rotate(-20deg)}
+
+.hero{padding:14px 20px 16px}
+.logo{display:flex;align-items:center;gap:14px}
+.cara{flex:none;width:78px;height:78px;border-radius:50%;display:block}
+.hero h1{font-family:var(--display);font-weight:800;font-size:40px;line-height:.92;letter-spacing:-.03em;margin:0}
+.hero h1 em{font-style:normal;color:var(--rojo)}
+.hero p{margin:12px 0 0;color:var(--tinta2);font-size:15px}
+.portada{display:block;width:calc(100% - 32px);margin:0 16px;border-radius:22px;aspect-ratio:16/10;object-fit:cover}
+
+.como{margin:16px 16px 0;padding:14px 12px;border-radius:18px;background:var(--pan);border:1px solid var(--linea)}
+.como h2{font-size:13px;text-align:center;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--tinta2);margin:0}
+.como ol{margin:12px 0 0;padding:0;list-style:none;counter-reset:c;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.como li{counter-increment:c;display:grid;justify-items:center;text-align:center;gap:7px;font-size:13px;font-weight:700;line-height:1.2}
+.como li::before{content:counter(c);width:30px;height:30px;border-radius:50%;background:var(--rojo);color:#fff;display:grid;place-items:center;font-size:15px}
+.como p{margin:12px 0 0;font-size:13px;color:var(--tinta2);text-align:center}
+
+/* menú de secciones */
+.menu{display:flex;gap:8px;overflow-x:auto;padding:16px 16px 2px;scrollbar-width:none}
+.menu::-webkit-scrollbar{display:none}
+.menu button{flex:none;border:1.5px solid var(--tinta);background:transparent;border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px}
+.menu button:hover{background:var(--tinta);color:var(--papel)}
+
+.paso{padding:26px 16px 0}
+.paso > h2{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:25px;letter-spacing:-.02em;margin:0 4px 14px}
+.num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--rojo);color:#fff;display:grid;place-items:center;font-family:var(--texto);font-size:15px;font-weight:700}
+.sub{font-family:var(--display);font-weight:700;font-size:21px;margin:26px 4px 2px;scroll-margin-top:12px}
+.sub + p{margin:0 4px 12px;font-size:14px;color:var(--tinta2)}
+
+/* días en vivo */
+.vivo-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta2);padding:0 4px 8px}
+.vivo-cab #reloj{text-transform:none;letter-spacing:0;font-size:12px;color:var(--tinta);font-variant-numeric:tabular-nums}
+.punto{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rojo);color:var(--rojo);margin-right:7px}
+.dias-fila{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 6px;scrollbar-width:none}
+.dias-fila::-webkit-scrollbar{display:none}
+.dia{flex:none;width:112px;display:grid;gap:7px;border:1.5px solid var(--linea);background:var(--pan);border-radius:14px;padding:10px;text-align:left}
+.dia[aria-pressed="true"]{border-color:var(--tinta);background:var(--papel);box-shadow:inset 0 0 0 1px var(--tinta)}
+.dia b{font-size:14px;line-height:1.15}
+.dia b i{display:block;font-style:normal;font-size:11px;font-weight:700;color:var(--rojo);text-transform:uppercase;letter-spacing:.04em}
+.medidor{height:8px;border-radius:99px;background:var(--linea);overflow:hidden}
+.medidor i{display:block;height:100%;border-radius:99px}
+.dia small{font-size:12px;font-weight:700}
+.dia.ok .medidor i{background:var(--wa)} .dia.ok small{color:var(--verde)}
+.dia.medio .medidor i{background:var(--mostaza)}
+.dia.bajo .medidor i{background:var(--rojo)} .dia.bajo small{color:var(--rojo)}
+
+/* combos */
+.combos{display:grid;gap:10px}
+.combo{border:1.5px solid var(--linea);border-radius:18px;background:var(--pan);padding:14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center}
+.combo.con{border-color:var(--tinta);box-shadow:inset 0 0 0 1px var(--tinta)}
+.combo .tag{grid-column:1/-1;justify-self:start;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:3px 9px;background:var(--mostaza);color:#2a2205}
+.combo .tag.ahorro{background:var(--rojo);color:#fff}
+.combo h4{font-size:17px;font-weight:700;margin:0;line-height:1.15}
+.combo p{margin:2px 0 0;font-size:13px;color:var(--tinta2);line-height:1.3}
+.combo .precio{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;margin-top:5px;display:block}
+.combo .precio s{color:var(--tinta2);font-weight:500;font-size:13px;margin-right:6px}
+.tira{grid-column:1/-1;display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:2px;margin-top:4px}
+.tira span{aspect-ratio:2/3;border-radius:2px;display:grid;grid-template-columns:3fr 2fr 3fr 2fr 3fr;overflow:hidden;background:var(--miga);border:1px solid var(--linea)}
+.mas-menos{display:grid;grid-template-columns:36px 26px 36px;align-items:center;text-align:center}
+.mas-menos button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--tinta);background:transparent;font-size:20px;font-weight:700;line-height:1;display:grid;place-items:center;padding:0}
+.mas-menos .mas{background:var(--rojo);border-color:var(--rojo);color:#fff}
+.mas-menos output{font-weight:700;font-variant-numeric:tabular-nums}
+.mas-menos.vacio .menos,.mas-menos.vacio output{visibility:hidden}
+
+/* la caja armada: tira angosta que queda pegada arriba */
+.caja{position:sticky;top:calc(8px + env(safe-area-inset-top,0px));z-index:5;background:var(--fuerte);color:var(--sobre);border-radius:16px;padding:10px 12px;display:grid;gap:8px;box-shadow:0 10px 20px -12px rgba(0,0,0,.55)}
+.caja-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px}
+.caja-cab b{font-family:var(--display);font-size:16px}
+.caja-cab span{font-variant-numeric:tabular-nums;font-weight:700}
+.huecos{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px}
+.hueco{aspect-ratio:2/3;border-radius:3px;border:1.5px dashed var(--sobre2);background:none;padding:0;opacity:.5}
+.hueco.lleno{border:0;opacity:1;display:grid;grid-template-columns:3fr 2fr 3fr 2fr 3fr;overflow:hidden;background:var(--miga)}
+.hueco i,.tira i{display:block}
+.hueco.nuevo{animation:caer .28s cubic-bezier(.3,1.5,.5,1)}
+@keyframes caer{from{transform:translateY(-10px) scale(.7);opacity:0}to{transform:none;opacity:1}}
+.caja-pie{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--sobre2)}
+.caja-pie button{border:0;background:none;color:var(--sobre);font-weight:700;font-size:12px;padding:0;text-decoration:underline}
+
+.fichas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.ficha{position:relative;border:1.5px solid var(--linea);border-radius:18px;background:var(--pan);overflow:hidden;display:grid;min-width:0}
+.ficha.con{border-color:var(--tinta);box-shadow:inset 0 0 0 1.5px var(--tinta)}
+.ficha .sumar{border:0;background:none;padding:0;text-align:left;display:grid;align-content:start}
+.ficha .arte{display:block;aspect-ratio:4/3;background:var(--miga)}
+.ficha .arte img{display:block;width:100%;height:100%;object-fit:cover}
+.ficha .txt{padding:10px 12px 12px;display:grid;gap:2px}
+.ficha h4{font-size:15px;font-weight:700;margin:0;line-height:1.15}
+.ficha .desc{font-size:12px;color:var(--tinta2);line-height:1.3}
+.ficha .precio{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;margin-top:4px}
+.sello{position:absolute;top:9px;left:9px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:5px 10px;box-shadow:0 3px 8px -2px rgba(0,0,0,.35);transform:rotate(-3deg);transform-origin:left center}
+.sello.top{background:var(--mostaza);color:#2a2205}
+.sello.veggie{background:#1f6b4f;color:#fff}
+.sello.esp{background:#2b1416;color:#f2c230}
+.ficha .n{position:absolute;top:8px;right:8px;min-width:30px;height:30px;border-radius:999px;background:var(--rojo);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;padding:0 8px;box-shadow:0 3px 8px -2px rgba(0,0,0,.35)}
+.ficha .menos{position:absolute;right:8px;bottom:10px;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--tinta);background:var(--papel);font-size:20px;font-weight:700;line-height:1;padding:0;display:grid;place-items:center}
+
+/* para acompañar */
+.lista{display:grid;gap:0;border:1.5px solid var(--linea);border-radius:18px;background:var(--pan);overflow:hidden}
+.grupo-t{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--tinta2);padding:12px 14px 4px}
+.fila{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--linea)}
+.grupo-t + .fila{border-top:0}
+.fila h4{margin:0;font-size:15px;font-weight:700;line-height:1.2}
+.fila p{margin:1px 0 0;font-size:13px;color:var(--tinta2)}
+.fila .precio{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.aviso18{margin:8px 4px 0;font-size:12px;color:var(--tinta2)}
+
+/* puntos */
+.club{margin:28px 16px 0;padding:18px;border-radius:22px;background:var(--fuerte);color:var(--sobre);display:grid;gap:10px;scroll-margin-top:12px}
+.club h3{font-family:var(--display);font-weight:800;font-size:24px;margin:0;letter-spacing:-.01em}
+.club h3 span{color:var(--mostaza)}
+.club p{margin:0;font-size:14px;color:var(--sobre2)}
+.club .fuerte{color:var(--sobre);font-weight:700;font-size:15px}
+.club-barra{display:flex;height:14px;border-radius:99px;background:var(--fuerte2);overflow:hidden}
+.club-barra i{display:block;height:100%;transition:width .4s}
+#club-tengo{background:var(--mostaza)} #club-sumo{background:#fff}
+.club-escala{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--sobre2);margin-top:4px}
+.canjes{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.canjes li{display:flex;justify-content:space-between;gap:10px;font-size:14px;border-top:1px solid var(--fuerte2);padding-top:6px}
+.canjes li b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.club-btn{border:0;border-radius:14px;background:var(--sobre);color:#2b1416;padding:12px;font-weight:700;font-size:15px}
+.pie{padding:18px 20px 20px;color:var(--tinta2);font-size:13px;text-align:center}
+
+.barra{position:sticky;bottom:0;z-index:6;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--papel) 72%,transparent)}
+.barra p{margin:0 auto 6px;width:fit-content;max-width:100%;text-align:center;font-size:12px;font-weight:600;color:var(--tinta2);background:var(--papel);border:1px solid var(--linea);border-radius:999px;padding:4px 12px}
+.barra p.alerta{color:var(--rojo);border-color:var(--rojo)}
+.barra button{width:100%;border:0;border-radius:18px;background:var(--rojo);color:#fff;padding:15px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:16px;box-shadow:var(--sombra)}
+.barra button:disabled{opacity:.5;cursor:not-allowed}
+.barra button span:last-child{font-variant-numeric:tabular-nums}
+
+/* pantallas */
+.pantalla{padding:20px;display:grid;gap:16px}
+.volver{border:0;background:none;padding:0;font-weight:700;color:var(--rojo);justify-self:start}
+.pantalla h2{font-family:var(--display);font-weight:800;font-size:28px;margin:0;letter-spacing:-.02em}
+.pantalla h3{font-family:var(--display);font-size:19px;margin:6px 0 0}
+.impresora{background:var(--fuerte);border-radius:22px;padding:14px 16px 26px;overflow:hidden}
+.ranura{height:8px;border-radius:99px;background:#000;box-shadow:inset 0 2px 3px rgba(255,255,255,.12);margin:0 6px}
+.ticket{position:relative;margin:-3px 14px 0;background:var(--miga);color:#2b1416;padding:16px 14px 14px;font-family:ui-monospace,"Cascadia Mono","Courier New",monospace;box-shadow:0 12px 22px -10px rgba(0,0,0,.6)}
+.ticket::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:8px;
+  background:linear-gradient(135deg,var(--miga) 50%,transparent 50%) 0 0/12px 8px,linear-gradient(225deg,var(--miga) 50%,transparent 50%) 0 0/12px 8px}
+.ticket-cab{display:flex;justify-content:space-between;gap:8px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1.5px dashed #2b1416;padding-bottom:8px;margin-bottom:8px}
+.resumen{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13px}
+.resumen li{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.resumen li span:last-child{white-space:nowrap}
+.resumen li.titulo{font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.06em;margin-top:6px;opacity:.7}
+.resumen li.total{font-weight:700;border-top:1.5px dashed #2b1416;font-size:16px;padding-top:8px;margin-top:6px}
+.ticket-pie{margin:10px 0 0;text-align:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.65}
+.campo{display:grid;gap:6px}
+.campo label,.campo legend{font-weight:700;font-size:14px;padding:0}
+.campo input,.campo textarea{border:1.5px solid var(--linea);background:var(--pan);border-radius:12px;padding:12px;width:100%}
+fieldset.campo{border:0;margin:0;padding:0}
+.opciones{display:flex;gap:8px;flex-wrap:wrap}
+.opciones label{position:relative;font-weight:600;font-size:14px}
+.opciones input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.opciones span{display:block;border:1.5px solid var(--linea);border-radius:12px;padding:10px 14px}
+.opciones input:checked + span{border-color:var(--tinta);background:var(--tinta);color:var(--papel)}
+.opciones input:focus-visible + span{outline:3px solid var(--mostaza);outline-offset:2px}
+.tilde{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:start;font-size:14px;font-weight:600}
+.tilde input{width:22px;height:22px;margin:0;accent-color:var(--rojo)}
+.secundario{border:1.5px solid var(--tinta);background:transparent;border-radius:14px;padding:11px 14px;font-weight:700;font-size:14px}
+.secundario:disabled{opacity:.45;cursor:not-allowed}
+.enviar{border:0;border-radius:18px;background:var(--wa);color:#fff;padding:15px;font-weight:700;font-size:16px}
+.principal{border:0;border-radius:18px;background:var(--rojo);color:#fff;padding:15px;font-weight:700;font-size:16px}
+.error{color:var(--rojo);font-weight:600;font-size:14px;margin:0}
+.mensaje{white-space:pre-wrap;background:var(--pan);border:1px solid var(--linea);border-radius:4px 16px 16px 16px;padding:14px;font-size:14px;margin:0;font-family:var(--texto)}
+.chica{font-size:13px;color:var(--tinta2);margin:0}
+.puntos{border-radius:18px;background:var(--fuerte);color:var(--sobre);padding:16px;display:grid;gap:6px}
+.puntos span{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sobre2)}
+.puntos b{font-family:var(--display);font-size:46px;line-height:1}
+.puntos small{font-size:13px}
+.premios{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.premios li{border:1px solid var(--linea);border-radius:14px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;font-size:14px}
+.premios small{color:var(--tinta2);grid-column:1}
+.premios button{grid-column:2;grid-row:1/3}
+.beneficios{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
+.seguimiento{list-style:none;padding:0;margin:0}
+.seguimiento li{display:grid;grid-template-columns:18px 1fr;gap:10px;padding-bottom:14px;position:relative;font-size:14px;color:var(--tinta2)}
+.seguimiento li::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--linea);margin-top:3px;background:var(--papel);position:relative;z-index:1}
+.seguimiento li.hecho{color:var(--tinta);font-weight:700}
+.seguimiento li.hecho::before{background:var(--wa);border-color:var(--wa)}
+.seguimiento li:not(:last-child)::after{content:"";position:absolute;left:8px;top:18px;bottom:0;width:2px;background:var(--linea)}
+
+/* notas */
+.notas{display:grid;gap:26px;min-width:0;max-width:62ch}
+.notas h2{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.notas h3{font-family:var(--display);font-weight:700;font-size:19px;margin:0 0 8px}
+.notas p{margin:0 0 8px}
+.notas ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.pendiente{border-left:4px solid var(--mostaza);padding:2px 0 2px 14px}
+.tabla{overflow-x:auto}
+.tabla table{border-collapse:collapse;font-size:14px;width:100%;font-variant-numeric:tabular-nums}
+.tabla th,.tabla td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--linea);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:no-preference){
+  .punto{animation:latido 1.6s ease-out infinite}
+  @keyframes latido{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 0 9px transparent}}
+}
+</style>
+
+</head>
+<body>
+<div class="pagina">
+  <section class="tienda" aria-label="Tienda">
+    <div id="vista-menu">
+      <div class="arriba">
+        <button type="button" class="cuenta-btn" id="abrir-cuenta"></button>
+        <button type="button" class="tema" id="tema" role="switch" aria-checked="false" aria-label="Modo oscuro">
+          <svg class="sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+          <svg class="luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+          <span class="perilla"></span>
+        </button>
+      </div>
+
+      <header class="hero">
+        <div class="logo">
+          <img class="cara" src="img/fausto.png" alt="" width="78" height="78">
+          <h1>Los Miga<br>de <em>Fausto</em></h1>
+        </div>
+        <p>Sándwiches de miga caseros, triples y hechos a pedido.</p>
+      </header>
+      <img class="portada" src="img/foto-bandeja.jpg" alt="Bandeja de sándwiches de miga surtidos">
+
+      <section class="como" aria-label="Cómo se pide">
+        <h2>Cómo se pide</h2>
+        <ol><li>Elegí el día</li><li>Armá tu pedido</li><li>Pedí por WhatsApp</li></ol>
+        <p>Te confirmamos y pagás al recibir.</p>
+      </section>
+
+      <nav class="menu" aria-label="Secciones">
+        <button type="button" data-ir="sec-combos">Combos</button>
+        <button type="button" data-ir="sec-caja">Armá tu caja</button>
+        <button type="button" data-ir="sec-extras">Bebidas y picada</button>
+        <button type="button" data-ir="sec-puntos">Puntos</button>
+      </nav>
+
+      <section class="paso">
+        <h2><span class="num">1</span>¿Para cuándo?</h2>
+        <div class="vivo-cab"><span><i class="punto"></i>Lugares en vivo</span><span id="reloj"></span></div>
+        <div class="dias-fila" id="dias"></div>
+      </section>
+
+      <section class="paso">
+        <h2><span class="num">2</span>Armá tu pedido</h2>
+
+        <h3 class="sub" id="sec-combos" style="margin-top:0">Combos</h3>
+        <p>Ya armados y con descuento.</p>
+        <div class="combos" id="combos"></div>
+
+        <h3 class="sub" id="sec-caja">Armá tu caja</h3>
+        <p>Elegí gusto por gusto. Un toque suma uno.</p>
+        <div class="caja" id="caja">
+          <div class="caja-cab"><b id="caja-titulo">Tu caja</b><span id="caja-total"></span></div>
+          <div class="huecos" id="huecos"></div>
+          <div class="caja-pie"><span id="caja-oferta"></span><button type="button" id="vaciar">Vaciar</button></div>
+        </div>
+        <div class="fichas" id="fichas"></div>
+
+        <h3 class="sub" id="sec-extras">Para acompañar</h3>
+        <p>Bebidas frías y picada.</p>
+        <div class="lista" id="extras"></div>
+        <p class="aviso18">La cerveza se vende solo a mayores de 18 años.</p>
+      </section>
+
+      <section class="club" id="sec-puntos" aria-label="Puntos">
+        <h3><span aria-hidden="true">★</span> Puntos Fausto</h3>
+        <p>Cada $100 que comprás suma 1 punto. Los puntos se cambian por combos.</p>
+        <div id="club-invitado">
+          <ul class="canjes" id="canjes-a"></ul>
+        </div>
+        <div id="club-socio" hidden>
+          <div class="club-barra"><i id="club-tengo"></i><i id="club-sumo"></i></div>
+          <div class="club-escala"><span>0</span><span id="club-meta"></span></div>
+          <p class="fuerte" id="club-texto" style="margin-top:8px"></p>
+        </div>
+        <button type="button" class="club-btn" id="club-btn"></button>
+      </section>
+
+      <p class="pie">Se hacen por encargo, de a pocas bandejas por día.</p>
+
+      <div class="barra" id="barra" hidden>
+        <p id="barra-nota"></p>
+        <button type="button" id="ir-pedido"><span id="barra-cant"></span><span id="barra-total"></span></button>
+      </div>
+    </div>
+
+    <form id="vista-pedido" class="pantalla" hidden novalidate>
+      <button class="volver" type="button" data-ver="menu">← Seguir eligiendo</button>
+      <h2>Tu pedido</h2>
+      <div class="impresora">
+        <div class="ranura"></div>
+        <div class="ticket">
+          <div class="ticket-cab"><b>Los Miga de Fausto</b><span id="ticket-dia"></span></div>
+          <ul class="resumen" id="resumen"></ul>
+          <p class="ticket-pie" id="ticket-pie"></p>
+        </div>
+      </div>
+      <button class="secundario" type="button" id="copiar">Copiar la lista para mandar al grupo</button>
+      <div class="campo"><label for="nombre">Tu nombre</label><input id="nombre" autocomplete="name" placeholder="Ej: Carla"></div>
+      <div class="campo"><label for="telefono">Tu celular</label><input id="telefono" inputmode="tel" autocomplete="tel" placeholder="Ej: 11 5555 5555"></div>
+      <fieldset class="campo"><legend>¿Cómo lo recibís?</legend>
+        <div class="opciones">
+          <label><input type="radio" name="entrega" id="retiro" value="Retiro" checked><span>Lo retiro</span></label>
+          <label><input type="radio" name="entrega" id="envio" value="Envío"><span>Envío a domicilio</span></label>
+        </div>
+      </fieldset>
+      <div class="campo" id="campo-dir" hidden><label for="direccion">Dirección de entrega</label><input id="direccion" autocomplete="street-address" placeholder="Calle, número y barrio"></div>
+      <fieldset class="campo"><legend>¿Cómo pagás?</legend>
+        <div class="opciones">
+          <label><input type="radio" name="pago" id="pago1" value="Transferencia" checked><span>Transferencia</span></label>
+          <label><input type="radio" name="pago" id="pago2" value="Efectivo"><span>Efectivo</span></label>
+        </div>
+      </fieldset>
+      <div class="campo"><label for="aclaracion">Aclaraciones (opcional)</label><textarea id="aclaracion" rows="2" placeholder="Ej: sin tomate en la mitad"></textarea></div>
+      <p class="error" id="error" hidden></p>
+      <button class="enviar" type="submit">Enviar pedido por WhatsApp</button>
+      <p class="chica">El pedido queda confirmado cuando te respondemos.</p>
+    </form>
+
+    <div id="vista-cuenta" class="pantalla" hidden>
+      <button class="volver" type="button" data-ver="menu">← Volver a la tienda</button>
+      <form id="registro" novalidate style="display:grid;gap:16px">
+        <h2>Registrate y sumá puntos</h2>
+        <ul class="beneficios">
+          <li><b>200 puntos de regalo</b> por registrarte.</li>
+          <li><b>1 punto cada $100</b> en cada pedido.</li>
+          <li><b>Cambiás los puntos por combos.</b></li>
+          <li>Ves tus pedidos y repetís uno con un toque.</li>
+        </ul>
+        <div class="campo"><label for="reg-nombre">Tu nombre</label><input id="reg-nombre" autocomplete="name" placeholder="Ej: Carla"></div>
+        <div class="campo"><label for="reg-mail">Tu mail</label><input id="reg-mail" type="email" inputmode="email" autocomplete="email" placeholder="Ej: carla@gmail.com"></div>
+        <div class="campo"><label for="reg-cel">Tu celular (opcional)</label><input id="reg-cel" inputmode="tel" autocomplete="tel" placeholder="Ej: 11 5555 5555"></div>
+        <label class="tilde"><input type="checkbox" id="reg-ofertas"><span>Quiero recibir ofertas y promociones por mail.</span></label>
+        <p class="error" id="reg-error" hidden></p>
+        <button class="principal" type="submit">Crear mi cuenta</button>
+        <p class="chica">Sin contraseña: te mandamos un enlace a tu mail para entrar. Te podés dar de baja de las ofertas cuando quieras.</p>
+      </form>
+      <div id="socio" hidden style="display:grid;gap:16px">
+        <h2 id="socio-hola"></h2>
+        <p class="chica" id="socio-mail"></p>
+        <div class="puntos"><span>Tus puntos</span><b id="socio-puntos"></b><small id="socio-falta"></small></div>
+        <h3>Cambiá tus puntos</h3>
+        <ul class="premios" id="premios"></ul>
+        <h3>Tus pedidos</h3>
+        <p class="chica">Todavía no hiciste pedidos. Cuando hagas el primero, lo vas a ver acá y lo vas a poder repetir.</p>
+        <button class="secundario" type="button" id="salir">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div id="vista-listo" class="pantalla" hidden>
+      <h2>¡Listo! Mandalo por WhatsApp</h2>
+      <p class="chica">Se abre WhatsApp con este mensaje ya escrito. Tocá enviar y te confirmamos.</p>
+      <pre class="mensaje" id="mensaje"></pre>
+      <a class="enviar" id="abrir-wa" href="https://wa.me/" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Abrir WhatsApp</a>
+      <h3>Seguí tu pedido</h3>
+      <ol class="seguimiento">
+        <li class="hecho">Pedido recibido</li>
+        <li>Confirmado</li>
+        <li>En preparación</li>
+        <li>Listo para retirar o en camino</li>
+      </ol>
+      <button class="secundario" type="button" data-ver="menu">Volver a la tienda</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var WHATSAPP="";
+  var GUSTOS=[
+    {id:"jq",n:"Jamón y queso",d:"El de siempre.",p:2000,c:["#f2a0a8","#f6d36b"],e:"top"},
+    {id:"jqt",n:"Jamón, queso y tomate",d:"Con tomate fresco.",p:2200,c:["#f2a0a8","#e4573d"]},
+    {id:"jqh",n:"Jamón, queso y huevo",d:"Con huevo pisado.",p:2200,c:["#f2a0a8","#fbe08a"]},
+    {id:"po",n:"Pollo",d:"Con queso crema y verdeo.",p:2400,c:["#ead2a4","#f6d36b"]},
+    {id:"be",n:"Berenjena en escabeche",d:"Berenjenas caseras y queso.",p:2600,c:["#8a5a86","#f6d36b"],e:"veggie"},
+    {id:"te",n:"Ternera",d:"Cocida a fuego lento.",p:2800,c:["#a8664e","#e4573d"],e:"esp"},
+    {id:"vt",n:"Vitel toné",d:"Con salsa de atún y anchoas.",p:3000,c:["#b98a6a","#e9d7a8"],e:"esp"}
+  ];
+  var SELLO={top:"★ Top ventas",veggie:"☘ Veggie",esp:"◆ Especial"};
+  var POR_ID={}; GUSTOS.forEach(function(g){POR_ID[g.id]=g});
+  function rep(id,n){var a=[];for(var i=0;i<n;i++)a.push(id);return a}
+  var SURT=rep("jq",3).concat(rep("jqt",3),rep("jqh",3),rep("po",3)), ESP=rep("be",4).concat(rep("te",4),rep("vt",4));
+  var COMBOS=[
+    {id:"c12",n:"Docena clásica",d:"12 de jamón y queso.",p:22000,it:rep("jq",12),tag:"El más pedido"},
+    {id:"c12s",n:"Docena surtida",d:"3 de cada clásico: jamón y queso, tomate, huevo y pollo.",p:24000,it:SURT},
+    {id:"c12e",n:"Docena especial",d:"4 de berenjena, 4 de ternera y 4 de vitel toné.",p:30000,it:ESP},
+    {id:"c24",n:"Clásica + especial",d:"Una docena de jamón y queso y una docena especial.",p:49900,it:rep("jq",12).concat(ESP)},
+    {id:"c48",n:"Caja fiesta",d:"4 docenas: 2 clásicas, 1 surtida y 1 especial. Para 20 personas.",p:89900,it:rep("jq",24).concat(SURT,ESP)},
+    {id:"c6",n:"Media docena clásica",d:"6 de jamón y queso.",p:11500,it:rep("jq",6)}
+  ];
+  var EXTRAS=[
+    {g:"Bebidas"},
+    {id:"gas",n:"Gaseosa 1,5 L",d:"Cola, lima-limón o naranja.",p:3500},
+    {id:"agua",n:"Agua saborizada 1,5 L",d:"Pomelo o manzana.",p:2800},
+    {id:"lata",n:"Cerveza lata 473 ml",d:"Rubia, bien fría.",p:2500},
+    {id:"litro",n:"Cerveza de litro",d:"Rubia, con envase.",p:5000},
+    {g:"Picada"},
+    {id:"pic2",n:"Picada para 2",d:"Quesos, fiambres, aceitunas y pan.",p:12000},
+    {id:"pic4",n:"Picada para 4",d:"Más variedad de quesos y fiambres.",p:20000}
+  ];
+  var CANJES=[{n:"Media docena clásica",pts:2400},{n:"Docena clásica",pts:4500},{n:"Docena especial",pts:6000}];
+  var DIAS=[{id:"v27",c:"Vie 27/11",v:"viernes 27/11",cupo:120,tom:64},
+            {id:"s28",c:"Sáb 28/11",v:"sábado 28/11",cupo:120,tom:103},
+            {id:"v4",c:"Vie 4/12",v:"viernes 4/12",cupo:120,tom:12},
+            {id:"x24",c:"Jue 24/12",v:"jueves 24/12 (Navidad)",cupo:200,tom:38,f:"Navidad"},
+            {id:"x31",c:"Jue 31/12",v:"jueves 31/12 (Año Nuevo)",cupo:200,tom:21,f:"Año Nuevo"}];
+  var caja=[], combos={}, extras={}, diaSel="v27", socio=null, ultimo=-1;
+  var cierre=Date.now()+((24+5)*3600+17*60)*1000;
+  var $=function(id){return document.getElementById(id)};
+  var plata=function(n){return "$"+n.toLocaleString("es-AR")};
+  function cuantos(lista,id){var n=0;lista.forEach(function(x){if(x===id)n++});return n}
+  function bruto(lista){var t=0;lista.forEach(function(id){t+=POR_ID[id].p});return t}
+  function franjas(c){return '<i></i><i style="background:'+c[0]+'"></i><i></i><i style="background:'+c[1]+'"></i><i></i>'}
+  function dia(){return DIAS.filter(function(d){return d.id===diaSel})[0]}
+  function estado(d){var q=Math.max(0,d.cupo-d.tom),p=q/d.cupo;
+    return q===0?{k:"bajo",t:"Completo",q:0}:p<.2?{k:"bajo",t:"Últimos "+q,q:q}:p<.5?{k:"medio",t:"Quedan "+q,q:q}:{k:"ok",t:"Hay lugar",q:q}}
+
+  function cuenta(){
+    var cb=bruto(caja), pct=caja.length>=24?10:caja.length>=12?5:0, cd=Math.round(cb*pct/100);
+    var ct=0, ca=0, cu=0;
+    COMBOS.forEach(function(c){var q=combos[c.id]||0;ct+=q*c.p;ca+=q*(bruto(c.it)-c.p);cu+=q*c.it.length});
+    var et=0, en=0;
+    EXTRAS.forEach(function(e){if(e.id){var q=extras[e.id]||0;et+=q*e.p;en+=q}});
+    var total=cb-cd+ct+et;
+    return {cajaBruto:cb,cajaPct:pct,cajaDesc:cd,combosTotal:ct,combosAhorro:ca,extrasTotal:et,extrasN:en,
+            sandwiches:caja.length+cu,total:total,puntos:Math.floor(total/100),hay:total>0};
+  }
+
+  function pintarDias(){var h="";
+    DIAS.forEach(function(x){var s=estado(x);
+      h+='<button type="button" class="dia '+s.k+'" data-dia="'+x.id+'" aria-pressed="'+(x.id===diaSel)+'"'+(s.q===0?" disabled":"")+'><b>'+(x.f?"<i>"+x.f+"</i>":"")+x.c+'</b><span class="medidor"><i style="width:'+Math.round(100*x.tom/x.cupo)+'%"></i></span><small>'+s.t+'</small></button>'});
+    $("dias").innerHTML=h; reloj()}
+  function reloj(){var s=Math.max(0,Math.floor((cierre-Date.now())/1000)),p=function(n){return (n<10?"0":"")+n};
+    $("reloj").textContent="Vie 27 cierra en "+Math.floor(s/86400)+" d "+p(Math.floor(s%86400/3600))+":"+p(Math.floor(s%3600/60))+":"+p(s%60)}
+
+  function pintarCombos(){var h="";
+    COMBOS.forEach(function(c){var b=bruto(c.it),pct=Math.round(100*(b-c.p)/b),t="";
+      c.it.slice(0,24).forEach(function(id){t+="<span>"+franjas(POR_ID[id].c)+"</span>"});
+      h+='<div class="combo" id="combo-'+c.id+'">'+(c.tag?'<span class="tag">'+c.tag+'</span>':'<span class="tag ahorro">Ahorrás '+pct+'%</span>')+
+        '<div><h4>'+c.n+'</h4><p>'+c.d+'</p><span class="precio"><s>'+plata(b)+'</s>'+plata(c.p)+'</span></div>'+
+        '<div class="mas-menos vacio" id="mm-'+c.id+'"><button type="button" class="menos" data-combo="'+c.id+'" data-d="-1" aria-label="Sacar '+c.n+'">−</button><output id="q-'+c.id+'">0</output><button type="button" class="mas" data-combo="'+c.id+'" data-d="1" aria-label="Sumar '+c.n+'">+</button></div>'+
+        '<div class="tira" aria-hidden="true">'+t+'</div></div>'});
+    $("combos").innerHTML=h}
+  function pintarFichas(){var h="";
+    GUSTOS.forEach(function(g){
+      h+='<div class="ficha" id="ficha-'+g.id+'"><button type="button" class="sumar" data-sumar="'+g.id+'" aria-label="Sumar uno de '+g.n+'">'+
+        '<span class="arte"><img src="img/foto-'+g.id+'.jpg" alt="" loading="lazy"></span><span class="txt"><h4>'+g.n+'</h4><span class="desc">'+g.d+'</span><span class="precio">'+plata(g.p)+'</span></span></button>'+
+        (g.e?'<span class="sello '+g.e+'">'+SELLO[g.e]+'</span>':'')+
+        '<span class="n" id="n-'+g.id+'" hidden></span><button type="button" class="menos" id="menos-'+g.id+'" data-sacar="'+g.id+'" aria-label="Sacar uno de '+g.n+'" hidden>−</button></div>'});
+    $("fichas").innerHTML=h}
+  function pintarExtras(){var h="";
+    EXTRAS.forEach(function(e){
+      if(e.g){h+='<div class="grupo-t">'+e.g+'</div>';return}
+      h+='<div class="fila"><div><h4>'+e.n+'</h4><p>'+e.d+'</p><span class="precio">'+plata(e.p)+'</span></div>'+
+        '<div class="mas-menos vacio" id="mm-'+e.id+'"><button type="button" class="menos" data-extra="'+e.id+'" data-d="-1" aria-label="Sacar '+e.n+'">−</button><output id="q-'+e.id+'">0</output><button type="button" class="mas" data-extra="'+e.id+'" data-d="1" aria-label="Sumar '+e.n+'">+</button></div></div>'});
+    $("extras").innerHTML=h}
+  function pintarCaja(){
+    var huecos=Math.max(12,12*Math.ceil(caja.length/12)),h="";
+    for(var i=0;i<huecos;i++){
+      if(i<caja.length){var g=POR_ID[caja[i]];
+        h+='<button type="button" class="hueco lleno'+(i===ultimo?" nuevo":"")+'" data-quitar="'+i+'" aria-label="Sacar '+g.n+'">'+franjas(g.c)+'</button>'}
+      else h+='<span class="hueco"></span>';
+    }
+    $("huecos").innerHTML=h; ultimo=-1}
+
+  function refrescar(){
+    var x=cuenta(); pintarCaja();
+    $("caja-titulo").textContent=caja.length?"Tu caja · "+caja.length:"Tu caja";
+    $("caja-total").textContent=caja.length?plata(x.cajaBruto-x.cajaDesc):"";
+    $("caja-oferta").textContent=x.cajaPct===10?"Tenés 10% menos":x.cajaPct===5?"Tenés 5% menos · con 24, 10%":caja.length?"Con 12, 5% menos · faltan "+(12-caja.length):"Con 12, 5% menos · con 24, 10%";
+    $("vaciar").hidden=!caja.length;
+    GUSTOS.forEach(function(g){var n=cuantos(caja,g.id);
+      $("n-"+g.id).hidden=n===0;$("n-"+g.id).textContent=n;$("menos-"+g.id).hidden=n===0;$("ficha-"+g.id).classList.toggle("con",n>0)});
+    COMBOS.forEach(function(c){var q=combos[c.id]||0;$("q-"+c.id).textContent=q;$("mm-"+c.id).classList.toggle("vacio",q===0);$("combo-"+c.id).classList.toggle("con",q>0)});
+    EXTRAS.forEach(function(e){if(e.id){var q=extras[e.id]||0;$("q-"+e.id).textContent=q;$("mm-"+e.id).classList.toggle("vacio",q===0)}});
+    var d=dia(),lugar=estado(d).q,pasa=x.sandwiches>lugar;
+    $("barra").hidden=!x.hay;
+    $("barra-cant").textContent=x.sandwiches?"Pedir "+x.sandwiches+(x.sandwiches===1?" sándwich":" sándwiches"):"Hacer el pedido";
+    $("barra-total").textContent=plata(x.total);
+    $("barra-nota").textContent=pasa?"Para el "+d.c+" quedan "+lugar+" lugares. Sacá "+(x.sandwiches-lugar)+" o cambiá el día.":"Para el "+d.c+" · ★ sumás "+x.puntos+" puntos";
+    $("barra-nota").classList.toggle("alerta",pasa);
+    $("ir-pedido").disabled=pasa;
+    pintarClub(x);
+    try{localStorage.setItem("miga-pedido2",JSON.stringify({caja:caja,combos:combos,extras:extras}))}catch(e){}
+  }
+
+  function proximo(p){for(var i=0;i<CANJES.length;i++)if(CANJES[i].pts>p)return CANJES[i];return null}
+  function pintarClub(x){
+    $("abrir-cuenta").innerHTML=socio?"<b>★ "+socio.puntos.toLocaleString("es-AR")+" puntos</b> · Mi cuenta":"<b>★</b> Registrate y sumá puntos";
+    $("club-invitado").hidden=!!socio; $("club-socio").hidden=!socio;
+    var li="";CANJES.forEach(function(c){li+="<li><span>"+c.n+"</span><b>"+c.pts.toLocaleString("es-AR")+" pts</b></li>"});
+    $("canjes-a").innerHTML=li;
+    if(!socio){$("club-btn").textContent=x.puntos?"Registrate y sumá "+x.puntos+" puntos con este pedido":"Registrate y llevate 200 puntos";return}
+    var pr=proximo(socio.puntos)||CANJES[CANJES.length-1],llego=socio.puntos+x.puntos;
+    $("club-tengo").style.width=Math.min(100,100*socio.puntos/pr.pts)+"%";
+    $("club-sumo").style.width=Math.max(0,Math.min(100-100*socio.puntos/pr.pts,100*x.puntos/pr.pts))+"%";
+    $("club-meta").textContent=pr.pts.toLocaleString("es-AR")+" ★ "+pr.n;
+    $("club-texto").textContent=x.puntos===0?"Tenés "+socio.puntos+" puntos. Te faltan "+(pr.pts-socio.puntos)+" para una "+pr.n.toLowerCase()+".":
+      llego>=pr.pts?"Con este pedido llegás a "+llego+" puntos: ¡ya podés cambiarlos por una "+pr.n.toLowerCase()+"!":
+      "Tenés "+socio.puntos+" y con este pedido sumás "+x.puntos+". Te faltan "+(pr.pts-llego)+" para una "+pr.n.toLowerCase()+".";
+    $("club-btn").textContent="Ver mis puntos y canjes";
+  }
+  function pintarCuenta(){
+    $("registro").hidden=!!socio; $("socio").hidden=!socio; if(!socio)return;
+    $("socio-hola").textContent="Hola, "+socio.nombre;
+    $("socio-mail").textContent=socio.mail+(socio.ofertas?" · recibís ofertas por mail":" · no recibís ofertas");
+    $("socio-puntos").textContent=socio.puntos.toLocaleString("es-AR");
+    var pr=proximo(socio.puntos);
+    $("socio-falta").textContent=pr?"Te faltan "+(pr.pts-socio.puntos).toLocaleString("es-AR")+" para una "+pr.n.toLowerCase()+".":"Ya podés cambiar cualquier combo.";
+    var h="";CANJES.forEach(function(c){var ok=socio.puntos>=c.pts;
+      h+="<li><b>"+c.n+"</b><small>"+c.pts.toLocaleString("es-AR")+" puntos"+(ok?"":" · te faltan "+(c.pts-socio.puntos).toLocaleString("es-AR"))+'</small><button type="button" class="secundario"'+(ok?"":" disabled")+">Canjear</button></li>"});
+    $("premios").innerHTML=h;
+  }
+
+  function ver(v){["menu","pedido","listo","cuenta"].forEach(function(k){$("vista-"+k).hidden=(k!==v)});
+    var t=document.querySelector(".tienda"); if(t.scrollIntoView) t.scrollIntoView({block:"start"})}
+  function agrupar(){var l=[];GUSTOS.forEach(function(g){var n=cuantos(caja,g.id);if(n)l.push({g:g,n:n})});return l}
+  function renglones(){var x=cuenta(),r=[];
+    var cs=COMBOS.filter(function(c){return combos[c.id]});
+    if(cs.length){r.push({t:"Combos"});cs.forEach(function(c){r.push({a:combos[c.id]+" × "+c.n,b:plata(combos[c.id]*c.p)})})}
+    if(caja.length){r.push({t:"Caja armada ("+caja.length+")"});agrupar().forEach(function(k){r.push({a:k.n+" × "+k.g.n,b:plata(k.n*k.g.p)})});
+      if(x.cajaDesc)r.push({a:"Descuento "+x.cajaPct+"%",b:"−"+plata(x.cajaDesc)})}
+    var es=EXTRAS.filter(function(e){return e.id&&extras[e.id]});
+    if(es.length){r.push({t:"Para acompañar"});es.forEach(function(e){r.push({a:extras[e.id]+" × "+e.n,b:plata(extras[e.id]*e.p)})})}
+    return r}
+  function pintarResumen(){var x=cuenta(),h="",i=0,d=function(){return ' style="animation-delay:'+(0.35+0.07*i++).toFixed(2)+'s"'};
+    renglones().forEach(function(r){h+=r.t?'<li class="titulo"'+d()+'><span>'+r.t+'</span><span></span></li>':"<li"+d()+"><span>"+r.a+"</span><span>"+r.b+"</span></li>"});
+    h+='<li class="total"'+d()+'><span>Total</span><span>'+plata(x.total)+"</span></li>";
+    $("ticket-dia").textContent=dia().c; $("resumen").innerHTML=h;
+    $("ticket-pie").textContent=(x.combosAhorro+x.cajaDesc?"Ahorrás "+plata(x.combosAhorro+x.cajaDesc)+" · ":"")+"★ sumás "+x.puntos+" puntos";
+    if(socio){if(!$("nombre").value)$("nombre").value=socio.nombre;if(!$("telefono").value)$("telefono").value=socio.cel}}
+  function listaTexto(){var x=cuenta(),l=[];
+    renglones().forEach(function(r){l.push(r.t?"\n"+r.t.toUpperCase():"• "+r.a)});
+    l.push("\nTotal: "+plata(x.total));return l.join("\n").replace(/^\n/,"")}
+  function marcado(nombre){var e=document.querySelector('input[name="'+nombre+'"]:checked');return e?e.value:""}
+  function armarMensaje(){var l=["Hola! Quiero hacer un pedido 🥪","",listaTexto(),"","Para el "+dia().v];
+    l.push(marcado("entrega")==="Envío"?"Envío a: "+$("direccion").value.trim():"Lo retiro");
+    l.push("Pago: "+marcado("pago"),"Nombre: "+$("nombre").value.trim(),"Celular: "+$("telefono").value.trim());
+    if($("aclaracion").value.trim())l.push("Aclaración: "+$("aclaracion").value.trim());
+    return l.join("\n")}
+
+  /* arranque */
+  try{var g0=JSON.parse(localStorage.getItem("miga-pedido2")||"null");
+    if(g0){(g0.caja||[]).slice(0,96).forEach(function(id){if(POR_ID[id])caja.push(id)});
+      COMBOS.forEach(function(c){var q=g0.combos&&g0.combos[c.id];if(q>0)combos[c.id]=Math.min(9,Math.floor(q))});
+      EXTRAS.forEach(function(e){var q=e.id&&g0.extras&&g0.extras[e.id];if(q>0)extras[e.id]=Math.min(24,Math.floor(q))})}}catch(e){}
+  try{var s0=JSON.parse(localStorage.getItem("miga-socio")||"null");if(s0&&s0.nombre)socio={nombre:String(s0.nombre).slice(0,40),mail:String(s0.mail||"").slice(0,80),cel:String(s0.cel||"").slice(0,20),ofertas:!!s0.ofertas,puntos:Math.max(0,Math.floor(s0.puntos)||0)}}catch(e){}
+  pintarDias(); pintarCombos(); pintarFichas(); pintarExtras(); refrescar();
+  setInterval(reloj,1000);
+
+  var RAIZ=document.documentElement;
+  function temaActual(){var a=RAIZ.getAttribute("data-theme");if(a==="dark"||a==="light")return a;
+    return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}
+  function pintarTema(){$("tema").setAttribute("aria-checked",temaActual()==="dark")}
+  try{var t0=localStorage.getItem("miga-tema");if(t0==="dark"||t0==="light")RAIZ.setAttribute("data-theme",t0)}catch(e){}
+  pintarTema();
+  $("tema").addEventListener("click",function(){var n=temaActual()==="dark"?"light":"dark";RAIZ.setAttribute("data-theme",n);
+    try{localStorage.setItem("miga-tema",n)}catch(e){} pintarTema()});
+
+  $("dias").addEventListener("click",function(e){var b=e.target.closest("[data-dia]");if(!b||b.disabled)return;diaSel=b.dataset.dia;pintarDias();refrescar()});
+  $("combos").addEventListener("click",function(e){var b=e.target.closest("[data-combo]");if(!b)return;var id=b.dataset.combo;
+    combos[id]=Math.max(0,Math.min(9,(combos[id]||0)+Number(b.dataset.d)));refrescar()});
+  $("extras").addEventListener("click",function(e){var b=e.target.closest("[data-extra]");if(!b)return;var id=b.dataset.extra;
+    extras[id]=Math.max(0,Math.min(24,(extras[id]||0)+Number(b.dataset.d)));refrescar()});
+  $("fichas").addEventListener("click",function(e){var s=e.target.closest("[data-sumar]"),m=e.target.closest("[data-sacar]");
+    if(m){var i=caja.lastIndexOf(m.dataset.sacar);if(i>=0)caja.splice(i,1);refrescar()}
+    else if(s&&caja.length<96){caja.push(s.dataset.sumar);ultimo=caja.length-1;refrescar()}});
+  $("huecos").addEventListener("click",function(e){var b=e.target.closest("[data-quitar]");if(!b)return;caja.splice(Number(b.dataset.quitar),1);refrescar()});
+  $("vaciar").addEventListener("click",function(){caja=[];refrescar()});
+  document.querySelectorAll("[data-ir]").forEach(function(b){b.addEventListener("click",function(){var z=$(b.dataset.ir);if(z&&z.scrollIntoView)z.scrollIntoView({block:"start",behavior:"smooth"})})});
+  document.querySelectorAll("[data-ver]").forEach(function(b){b.addEventListener("click",function(){ver(b.dataset.ver)})});
+  $("ir-pedido").addEventListener("click",function(){pintarResumen();ver("pedido")});
+  function abrirCuenta(){pintarCuenta();ver("cuenta")}
+  $("abrir-cuenta").addEventListener("click",abrirCuenta);
+  $("club-btn").addEventListener("click",abrirCuenta);
+  $("registro").addEventListener("submit",function(e){e.preventDefault();var n=$("reg-nombre").value.trim(),m=$("reg-mail").value.trim(),c=$("reg-cel").value.trim(),falta="";
+    if(!n)falta="Falta tu nombre.";else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m))falta="Revisá tu mail: tiene que ser como nombre@gmail.com.";
+    $("reg-error").hidden=!falta;$("reg-error").textContent=falta;if(falta)return;
+    socio={nombre:n.slice(0,40),mail:m.slice(0,80),cel:c.slice(0,20),ofertas:$("reg-ofertas").checked,puntos:200};try{localStorage.setItem("miga-socio",JSON.stringify(socio))}catch(x){}
+    pintarCuenta();refrescar()});
+  $("salir").addEventListener("click",function(){socio=null;try{localStorage.removeItem("miga-socio")}catch(x){} pintarCuenta();refrescar()});
+  document.querySelectorAll('input[name="entrega"]').forEach(function(r){r.addEventListener("change",function(){$("campo-dir").hidden=marcado("entrega")!=="Envío"})});
+  $("copiar").addEventListener("click",function(){var b=this,t=listaTexto();
+    var ok=function(){b.textContent="Lista copiada";setTimeout(function(){b.textContent="Copiar la lista para mandar al grupo"},1800)};
+    try{navigator.clipboard.writeText(t).then(ok,function(){b.textContent="No se pudo copiar"})}catch(e){b.textContent="No se pudo copiar"}});
+  $("vista-pedido").addEventListener("submit",function(e){e.preventDefault();var falta="";
+    if(!$("nombre").value.trim())falta="Falta tu nombre.";
+    else if($("telefono").value.replace(/\D/g,"").length<8)falta="Falta tu celular, con característica.";
+    else if(marcado("entrega")==="Envío"&&!$("direccion").value.trim())falta="Falta la dirección para el envío.";
+    $("error").hidden=!falta;$("error").textContent=falta;if(falta)return;
+    var msj=armarMensaje();$("mensaje").textContent=msj;$("abrir-wa").href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(msj);ver("listo")});
+})();
+</script>
+</body>
+</html>
