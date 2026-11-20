@@ -520,7 +520,8 @@ fieldset.campo{border:0;margin:0;padding:0}
       <pre class="mensaje" id="mensaje"></pre>
       <a class="enviar" id="abrir-wa" href="https://wa.me/" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Abrir WhatsApp</a>
       <h3>Seguí tu pedido</h3>
-      <ol class="seguimiento">
+      <a class="secundario" id="seguir" hidden style="display:block;text-align:center;text-decoration:none">Ver cómo va mi pedido</a>
+      <ol class="seguimiento" id="seguir-muestra">
         <li class="hecho">Pedido recibido</li>
         <li>Confirmado</li>
         <li>En preparación</li>
@@ -811,7 +812,7 @@ fieldset.campo{border:0;margin:0;padding:0}
       cargando=false;conectada=ponerDias(r[1]);
       pintarDias();pintarCatalogo();refrescar();
     }).catch(function(){cargando=false;conectada=false;pintarDias();refrescar()})}
-  function mostrarListo(msj){$("mensaje").textContent=msj;var w=$("abrir-wa");if(w)w.href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(msj);ver("listo")}
+  function mostrarListo(msj,clave){$("mensaje").textContent=msj;var sg=$("seguir");sg.hidden=!clave;$("seguir-muestra").hidden=!!clave;if(clave)sg.href="pedido/?c="+clave;var w=$("abrir-wa");if(w)w.href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(msj);ver("listo")}
 
   /* ---- arranque ---- */
   try{var g0=JSON.parse(localStorage.getItem("miga-pedido3")||"null");
@@ -872,7 +873,7 @@ fieldset.campo{border:0;margin:0;padding:0}
       entrega:marcado("entrega")==="Envío"?"envio":"retiro",direccion:$("direccion").value.trim(),pago:marcado("pago").toLowerCase(),
       aclaracion:$("aclaracion").value.trim(),items:items}}).then(function(r){
         var msj=armarMensaje(r.numero);boton.disabled=false;boton.textContent=texto;
-        mostrarListo(msj);q={};$("aclaracion").value="";refrescar();cargarDias().catch(function(){});
+        mostrarListo(msj,r.clave);q={};$("aclaracion").value="";refrescar();cargarDias().catch(function(){});
       }).catch(function(e){boton.disabled=false;boton.textContent=texto;
         $("error").hidden=false;$("error").textContent=e.dicho?e.message:"No pudimos guardar tu pedido. Revisá tu conexión y probá de nuevo.";
         if(e.dicho)cargarDias().catch(function(){})})});

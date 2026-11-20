@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Tu pedido · Los Miga de Fausto</title>
+<meta name="theme-color" content="#d5202c">
+<link rel="icon" type="image/png" href="../img/fausto.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --pan:#fbf8f6; --papel:#ffffff; --tinta:#2b1416; --tinta2:#6d5557; --linea:#ebe0de;
+  --rojo:#d5202c; --rojo-suave:#fde9e9; --wa:#128c4a;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --texto:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --pan:#120a0b; --papel:#1c1012; --tinta:#f8f0ef; --tinta2:#b9a3a4; --linea:#38262a;
+  --rojo:#ff5a63; --rojo-suave:#3a171b; --wa:#2fbf71; color-scheme:dark } }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--pan);color:var(--tinta);font:16px/1.45 var(--texto)}
+h1,h2{font-family:var(--display);margin:0;line-height:1.08}
+.marco{max-width:480px;margin:0 auto;padding:16px 16px 40px}
+.cab{display:flex;align-items:center;gap:10px;margin-bottom:16px;text-decoration:none;color:inherit}
+.cab img{width:40px;height:40px;border-radius:50%}
+.cab b{font-family:var(--display);font-size:18px}
+.tarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:18px;padding:18px;margin-bottom:12px}
+.chica{font-size:13px;color:var(--tinta2);margin:0}
+.ahora{background:var(--rojo);color:#fff;border:0}
+@media (prefers-color-scheme: dark){.ahora{background:#7d0c15}}
+.ahora .chica{color:rgba(255,255,255,.82)}
+.ahora h1{font-size:30px;margin:6px 0 8px}
+.ahora p{margin:0}
+#mapa{height:300px;border-radius:14px;margin-top:14px;background:var(--pan);z-index:0}
+.moto{font-size:30px;line-height:36px;text-align:center;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+.pasos{list-style:none;padding:0;margin:0}
+.pasos li{display:grid;grid-template-columns:18px 1fr;gap:12px;padding-bottom:16px;position:relative;color:var(--tinta2)}
+.pasos li:last-child{padding-bottom:0}
+.pasos li::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--linea);margin-top:4px;background:var(--papel);position:relative;z-index:1}
+.pasos li.hecho{color:var(--tinta);font-weight:600}
+.pasos li.hecho::before{background:var(--wa);border-color:var(--wa)}
+.pasos li.actual{color:var(--tinta);font-weight:700}
+.pasos li.actual::before{background:var(--rojo);border-color:var(--rojo);box-shadow:0 0 0 5px var(--rojo-suave)}
+.pasos li:not(:last-child)::after{content:"";position:absolute;left:8px;top:20px;bottom:0;width:2px;background:var(--linea)}
+.pasos li.hecho:not(:last-child)::after{background:var(--wa)}
+.lista{list-style:none;margin:0;padding:0;font-size:15px}
+.lista li{padding:4px 0}
+.total{display:flex;justify-content:space-between;font-weight:700;border-top:1px solid var(--linea);padding-top:10px;margin-top:10px}
+.boton{display:block;border-radius:14px;padding:14px;background:var(--wa);color:#fff;font-weight:700;text-align:center;text-decoration:none}
+.boton.suave{background:var(--papel);color:var(--tinta);border:1px solid var(--linea);margin-top:8px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="marco">
+  <a class="cab" href="../"><img src="../img/fausto.png" alt=""><b>Los Miga de Fausto</b></a>
+  <div class="tarjeta" id="espera"><p class="chica">Buscando tu pedido…</p></div>
+  <div id="todo" hidden>
+    <div class="tarjeta ahora">
+      <p class="chica" id="num"></p>
+      <h1 id="titulo"></h1>
+      <p id="detalle"></p>
+      <div id="mapa" hidden></div>
+      <p class="chica" id="mapa-nota" style="margin-top:8px" hidden></p>
+    </div>
+    <div class="tarjeta"><ol class="pasos" id="pasos"></ol></div>
+    <div class="tarjeta">
+      <h2 style="font-size:18px;margin-bottom:8px">Lo que pediste</h2>
+      <ul class="lista" id="items"></ul>
+      <div class="total"><span id="pago"></span><span id="total"></span></div>
+    </div>
+    <a class="boton" id="wa" target="_blank" rel="noopener" hidden>Escribirnos por WhatsApp</a>
+    <a class="boton suave" href="../">Volver a la tienda</a>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+  var BASE={url:"https://ikptgfyfqvgrhhemvzly.supabase.co",clave:"sb_publishable_Mk65UgFQ0zPuubaz0SMXpg_IJTNdh16"};
+  var $=function(id){return document.getElementById(id)};
+  var clave=(new URLSearchParams(location.search).get("c")||"").trim();
+  var DL=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  function fecha(f){var a=f.split("-"),d=new Date(+a[0],a[1]-1,+a[2]);return DL[d.getDay()]+" "+(+a[2])+"/"+(+a[1])}
+  function nada(t){$("espera").hidden=false;$("todo").hidden=true;$("espera").innerHTML='<p class="chica"></p>';$("espera").firstChild.textContent=t}
+  var mapa=null,marca=null,reloj=null;
+  function pintarMapa(r){
+    var hay=r&&window.L;$("mapa").hidden=!hay;$("mapa-nota").hidden=!hay;if(!hay)return;
+    var p=[r.lat,r.lng];
+    if(!mapa){mapa=L.map("mapa",{zoomControl:false,attributionControl:true}).setView(p,15);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(mapa);
+      marca=L.marker(p,{icon:L.divIcon({className:"moto",html:"🛵",iconSize:[36,36],iconAnchor:[18,18]})}).addTo(mapa)}
+    else{marca.setLatLng(p);mapa.panTo(p)}
+    setTimeout(function(){mapa.invalidateSize()},50);
+    $("mapa-nota").textContent=r.hace<45?"Ubicación en vivo.":"Última ubicación: hace "+(r.hace<90?"un minuto":Math.round(r.hace/60)+" minutos")+"."}
+  function pintar(p){
+    if(!p){nada("No encontramos ese pedido. Revisá el enlace que te mandamos.");return}
+    $("espera").hidden=true;$("todo").hidden=false;
+    var envio=p.entrega==="envio",cuando=fecha(p.fecha);
+    var T={nuevo:["Recibimos tu pedido","Enseguida te lo confirmamos por WhatsApp."],
+      confirmado:["Pedido confirmado","Lo preparamos para el "+cuando+"."],
+      en_preparacion:["Lo estamos preparando",envio?"En un rato sale para tu casa.":"Te avisamos apenas esté listo para retirar."],
+      en_camino:envio?["¡Ya va en camino!",p.reparto?"Mirá en el mapa por dónde viene.":"Ya salió para tu casa."]:["¡Listo para retirar!","Ya podés pasar a buscarlo."],
+      entregado:["Entregado","¡Gracias, "+p.nombre+"! Que los disfrutes."],
+      cancelado:["Pedido cancelado","Si es un error, escribinos por WhatsApp."]}[p.estado];
+    $("num").textContent="Pedido N° "+p.numero+" · para el "+cuando;
+    $("titulo").textContent=T[0];$("detalle").textContent=T[1];
+    var orden=["nuevo","confirmado","en_preparacion","en_camino","entregado"],
+        nombres=["Pedido recibido","Confirmado","En preparación",envio?"En camino":"Listo para retirar","Entregado"],i=orden.indexOf(p.estado),h="";
+    nombres.forEach(function(n,k){h+='<li class="'+(i<0?"":k<i||p.estado==="entregado"?"hecho":k===i?"actual":"")+'">'+n+"</li>"});
+    $("pasos").innerHTML=h;$("pasos").parentNode.hidden=p.estado==="cancelado";
+    $("items").textContent="";(p.items||[]).forEach(function(it){var li=document.createElement("li");li.textContent=it.c+" × "+it.n;$("items").appendChild(li)});
+    $("total").textContent="$"+p.total.toLocaleString("es-AR");
+    $("pago").textContent=p.cobrado?"Total · ya pagado":"Total · "+(p.pago==="efectivo"?"en efectivo":"por transferencia");
+    var w=String(p.whatsapp||"").replace(/\D/g,"");$("wa").hidden=!w;
+    if(w)$("wa").href="https://wa.me/"+w+"?text="+encodeURIComponent("Hola! Te escribo por mi pedido N° "+p.numero);
+    pintarMapa(p.reparto);
+    clearTimeout(reloj);
+    if(p.estado!=="entregado"&&p.estado!=="cancelado")reloj=setTimeout(buscar,p.estado==="en_camino"?10000:30000)}
+  function buscar(){
+    if(document.hidden){reloj=setTimeout(buscar,5000);return}
+    fetch(BASE.url+"/rest/v1/rpc/seguir_pedido",{method:"POST",body:JSON.stringify({p_clave:clave}),
+      headers:{apikey:BASE.clave,Authorization:"Bearer "+BASE.clave,"Content-Type":"application/json"}})
+      .then(function(r){if(!r.ok)throw 0;return r.json()}).then(pintar)
+      .catch(function(){if($("todo").hidden)nada("No pudimos conectar. Revisá tu conexión y recargá la página.");clearTimeout(reloj);reloj=setTimeout(buscar,15000)})}
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clave))nada("Falta el enlace del pedido. Abrilo desde el mensaje que te mandamos.");
+  else buscar();
+})();
+</script>
+</body>
+</html>
