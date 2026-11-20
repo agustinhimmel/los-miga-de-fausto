@@ -538,6 +538,7 @@ fieldset.campo{border:0;margin:0;padding:0}
   var WHATSAPP="";
   /* Conexión con la base. En la maqueta queda en null y todo es de muestra; armar-sitio.py pone la dirección y la clave pública. */
   var BASE={url:"https://ikptgfyfqvgrhhemvzly.supabase.co",clave:"sb_publishable_Mk65UgFQ0zPuubaz0SMXpg_IJTNdh16"}, conectada=false, cargando=false;
+  var ANTES=1; /* con cuántos días de anticipación se pide */
   var ESCALA=[{desde:12,pct:5},{desde:24,pct:10}]; /* descuento por cantidad en sueltos */
   var TACHO='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
   var SELLO={top:"★ Top ventas",veggie:"☘ Veggie",esp:"◆ Especial"};
@@ -621,7 +622,7 @@ fieldset.campo{border:0;margin:0;padding:0}
   function suelto(lista){var t=0;lista.forEach(function(id){t+=POR_ID[id].p});return t}
   function brutoDe(i){return i.t==="c"?suelto(i.it)+(i.mas||0):(i.b||i.p)}
   function dia(){return DIAS.filter(function(d){return d.id===diaSel})[0]}
-  function estado(d){var r=Math.max(0,d.cupo-d.tom),p=r/d.cupo;
+  function estado(d){if(d.cupo==null)return {k:"ok",t:"Hay lugar",q:Infinity};var r=Math.max(0,d.cupo-d.tom),p=r/d.cupo;
     return r===0?{k:"bajo",t:"Completo",q:0}:p<.2?{k:"bajo",t:"Últimos "+r,q:r}:p<.5?{k:"medio",t:"Quedan "+r,q:r}:{k:"ok",t:"Hay lugar",q:r}}
 
   function cuenta(){
@@ -664,9 +665,9 @@ fieldset.campo{border:0;margin:0;padding:0}
   function pintarDias(){var h="";
     if(BASE&&!conectada){$("dias").innerHTML='<p class="chica">'+(cargando?"Buscando los lugares…":"No pudimos cargar los días. Revisá tu conexión y recargá la página.")+"</p>";$("reloj").textContent="";return}
     DIAS.forEach(function(x){var s=estado(x);
-      h+='<button type="button" class="dia '+s.k+'" data-dia="'+x.id+'" aria-pressed="'+(x.id===diaSel)+'"'+(s.q===0?" disabled":"")+'><b>'+(x.f?"<i>"+x.f+"</i>":"")+x.c+'</b><span class="medidor"><i style="width:'+Math.round(100*x.tom/x.cupo)+'%"></i></span><small>'+s.t+'</small></button>'});
+      h+='<button type="button" class="dia '+s.k+'" data-dia="'+x.id+'" aria-pressed="'+(x.id===diaSel)+'"'+(s.q===0?" disabled":"")+'><b>'+(x.f?"<i>"+x.f+"</i>":"")+x.c+'</b>'+(x.cupo==null?'':'<span class="medidor"><i style="width:'+Math.round(100*x.tom/x.cupo)+'%"></i></span>')+'<small>'+s.t+'</small></button>'});
     $("dias").innerHTML=h; reloj()}
-  function reloj(){if(BASE){$("reloj").textContent="";return}var s=Math.max(0,Math.floor((cierre-Date.now())/1000)),p=function(n){return (n<10?"0":"")+n};
+  function reloj(){if(BASE){$("reloj").textContent=conectada?"Se pide hasta "+(ANTES===1?"el día anterior":ANTES+" días antes"):"";return}var s=Math.max(0,Math.floor((cierre-Date.now())/1000)),p=function(n){return (n<10?"0":"")+n};
     $("reloj").textContent="Vie 27 cierra en "+Math.floor(s/86400)+" d "+p(Math.floor(s%86400/3600))+":"+p(Math.floor(s%3600/60))+":"+p(s%60)}
 
   function enCarro(){return ITEMS.filter(function(i){return cant(i.id)>0})}
@@ -797,16 +798,16 @@ fieldset.campo{border:0;margin:0;padding:0}
       .then(function(r){return r.json().then(function(j){if(!r.ok){var e=new Error(j&&j.code==="P0001"?j.message:"");e.dicho=!!(j&&j.code==="P0001");throw e}return j})})}
   var DC=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],DL=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
   function diaDeBase(r){var a=r.fecha.split("-"),f=new Date(+a[0],a[1]-1,+a[2]),dm=(+a[2])+"/"+(+a[1]);
-    return {id:r.fecha,fecha:r.fecha,c:DC[f.getDay()]+" "+dm,v:DL[f.getDay()]+" "+dm+(r.etiqueta?" ("+r.etiqueta+")":""),cupo:r.cupo,tom:Math.min(r.cupo,r.tomados),f:r.etiqueta||""}}
-  function ponerDias(filas){var l=filas.filter(function(r){return r.cupo>0}).map(diaDeBase);if(!l.length)return false;
-    DIAS=l;var libre=function(d){return d.cupo-d.tom>0};
+    return {id:r.fecha,fecha:r.fecha,c:DC[f.getDay()]+" "+dm,v:DL[f.getDay()]+" "+dm+(r.etiqueta?" ("+r.etiqueta+")":""),cupo:r.cupo,tom:r.cupo==null?r.tomados:Math.min(r.cupo,r.tomados),f:r.etiqueta||""}}
+  function ponerDias(filas){var l=filas.filter(function(r){return r.cupo==null||r.cupo>0}).map(diaDeBase);if(!l.length)return false;
+    DIAS=l;var libre=function(d){return d.cupo==null||d.cupo-d.tom>0};
     var mio=DIAS.filter(function(d){return d.id===diaSel&&libre(d)})[0]||DIAS.filter(libre)[0]||DIAS[0];diaSel=mio.id;return true}
   function cargarDias(){return pedir("rpc/dias_disponibles",{}).then(function(f){if(ponerDias(f)){pintarDias();refrescar()}})}
   function cargar(){if(!BASE)return;cargando=true;pintarDias();refrescar();
     Promise.all([pedir("productos?select=id,precio,activo"),pedir("rpc/dias_disponibles",{}),pedir("ajustes?select=clave,valor")]).then(function(r){
       var p={},a={};r[0].forEach(function(x){p[x.id]=x});r[2].forEach(function(x){a[x.clave]=x.valor});
       ITEMS=ITEMS.filter(function(i){var x=p[i.id];if(!x||!x.activo){delete q[i.id];return false}i.p=x.precio;return true});
-      if(a.minimo_sandwiches>0)MINIMO=a.minimo_sandwiches;
+      if(a.minimo_sandwiches>0)MINIMO=a.minimo_sandwiches;if(a.anticipacion_dias>=0)ANTES=a.anticipacion_dias;
       if(a.descuento_sueltos&&a.descuento_sueltos.length!==undefined)ESCALA=a.descuento_sueltos;
       if(typeof a.whatsapp==="string")WHATSAPP=a.whatsapp.replace(/\D/g,"");
       cargando=false;conectada=ponerDias(r[1]);
