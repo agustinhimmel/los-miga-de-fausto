@@ -190,6 +190,7 @@ body,.tienda,.ficha,.como,.dia,.fila,.combo{transition:background-color .35s,bor
 .caja-cab span{font-size:13px}
 .elegidos{align-items:center}
 .elegidos:empty{display:none}
+.caja-lista,.caja-renglon,.marca{display:none}
 .vaciar-mini{flex:none;border:0;background:none;font-size:12px;font-weight:700;text-decoration:underline;color:var(--tinta2);padding:6px 4px;margin-left:auto}
 .tabs{display:flex;gap:20px;overflow-x:auto;scrollbar-width:none;padding:6px 2px 0}
 .tabs::-webkit-scrollbar{display:none}
@@ -354,7 +355,8 @@ fieldset.campo{border:0;margin:0;padding:0}
   @keyframes latido{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 0 9px transparent}}
 }
 /* La tienda en pantallas grandes. armar-sitio.py lo suma al final de los estilos del sitio.
-   En el celular no cambia nada: todo esto vale solo desde 700 px (tablet) y 1000 px (computadora). */
+   En el celular no cambia nada: todo esto vale solo desde 700 px (tablet) y 1000 px (computadora).
+   Regla: en la computadora tiene que verse MEJOR que en el celular, no una columna angosta. */
 .hero-cta{display:none}
 button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
 
@@ -368,114 +370,148 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
 
 /* ---------- computadora ---------- */
 @media (min-width:1000px){
-  .pagina{max-width:1240px;padding:0 40px 80px;display:block}
+  .pagina{max-width:1480px;padding:0 48px 96px;display:block}
   .tienda{background:none;border:0;border-radius:0;box-shadow:none;overflow:visible}
-  #vista-menu{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);column-gap:56px;align-items:center}
+  #vista-menu{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);column-gap:64px;align-items:center}
   #vista-menu > *{grid-column:1/-1}
 
-  /* arriba: cuenta y modo claro/oscuro */
-  .arriba{padding:22px 0 0;justify-content:flex-end;gap:14px}
-  .cuenta-btn{font-size:14px;padding:9px 16px;background:var(--papel)}
+  /* barra de arriba: marca a la izquierda, cuenta y modo a la derecha */
+  .arriba{padding:20px 0;gap:16px;border-bottom:1px solid var(--linea)}
+  .marca{display:flex;align-items:center;gap:12px;margin-right:auto;text-decoration:none;color:var(--tinta);font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em}
+  .marca img{width:44px;height:44px;border-radius:50%}
+  .marca em{font-style:normal;color:var(--rojo)}
+  .cuenta-btn{font-size:15px;padding:10px 18px;background:var(--papel)}
   .cuenta-btn:hover{border-color:var(--tinta)}
 
-  .bienvenida{margin:18px 0 0;font-size:17px;padding:14px 18px}
-  /* portada: nombre a la izquierda, foto a la derecha */
-  #vista-menu > .hero{grid-column:1;padding:40px 0 48px}
-  #vista-menu > .portada{grid-column:2;width:100%;margin:0;aspect-ratio:5/4;border-radius:32px;box-shadow:var(--sombra)}
-  .logo{gap:22px;align-items:center}
-  .logo .cara{width:124px;height:124px}
-  .hero h1{font-size:clamp(64px,7.2vw,104px);line-height:.88}
-  .hero p{font-size:21px;margin-top:22px;max-width:26ch}
-  .hero-cta{display:inline-flex;align-items:center;gap:10px;margin-top:28px;background:var(--rojo);color:#fff;font-weight:700;font-size:18px;
-    padding:16px 26px;border-radius:999px;text-decoration:none;box-shadow:var(--sombra);transition:transform .15s}
+  /* portada: el nombre grande a la izquierda, la foto a la derecha. El diablito ya está en la barra de arriba. */
+  #vista-menu > .hero{grid-column:1;padding:56px 0 64px}
+  #vista-menu > .portada{grid-column:2;width:100%;margin:0;aspect-ratio:4/3;border-radius:36px;box-shadow:var(--sombra)}
+  .hero .logo{display:block}
+  .hero .logo .cara{display:none}
+  .hero h1{font-size:clamp(84px,8.4vw,132px);line-height:.86;letter-spacing:-.04em;white-space:nowrap}
+  .hero p{font-size:24px;line-height:1.35;margin-top:28px;max-width:24ch}
+  .hero-cta{display:inline-flex;align-items:center;gap:12px;margin-top:36px;background:var(--rojo);color:#fff;font-weight:700;font-size:20px;
+    padding:20px 32px;border-radius:999px;text-decoration:none;box-shadow:var(--sombra);transition:transform .15s}
   .hero-cta:hover{transform:translateY(-2px)}
+  .bienvenida{margin:18px 0 0;font-size:17px;padding:14px 18px}
 
   /* cómo se pide: una franja */
-  .como{margin:24px 0 0;padding:26px 32px;border-radius:26px;background:var(--papel);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:40px}
+  .como{margin:8px 0 0;padding:28px 36px;border-radius:28px;background:var(--papel);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:48px}
   .como h2{font-size:14px;text-align:left}
-  .como ol{margin:0;gap:24px}
-  .como li{grid-template-columns:auto 1fr;justify-items:start;align-items:center;text-align:left;font-size:17px;gap:12px}
-  .como li::before{width:40px;height:40px;font-size:19px}
-  .como p{margin:0;text-align:right;font-size:14px;max-width:24ch}
+  .como ol{margin:0;gap:28px}
+  .como li{grid-template-columns:auto 1fr;justify-items:start;align-items:center;text-align:left;font-size:19px;gap:14px}
+  .como li::before{width:46px;height:46px;font-size:21px}
+  .como p{margin:0;text-align:right;font-size:15px;max-width:24ch}
 
   /* pasos */
-  .paso{padding:56px 0 0}
-  .paso > h2{font-size:36px;margin:0 0 20px;gap:14px}
-  .vivo-cab{justify-content:flex-start;gap:24px;font-size:12px;padding:0 0 12px}
-  .vivo-cab #reloj{font-size:14px}
-  .dias-fila{flex-wrap:wrap;overflow:visible;margin:0;padding:0;gap:12px}
-  .dia{width:156px;padding:14px;background:var(--papel);border-radius:16px;transition:transform .15s,border-color .15s}
+  .paso{padding:64px 0 0}
+  .paso > h2{font-size:42px;margin:0 0 22px;gap:16px}
+  .vivo-cab{justify-content:flex-start;gap:24px;font-size:13px;padding:0 0 14px}
+  .vivo-cab #reloj{font-size:15px}
+  .dias-fila{flex-wrap:wrap;overflow:visible;margin:0;padding:0;gap:14px}
+  .dia{width:172px;padding:16px;background:var(--papel);border-radius:18px;transition:transform .15s,border-color .15s}
   .dia:hover:not(:disabled){transform:translateY(-2px);border-color:var(--tinta)}
-  .dia b{font-size:16px}
-  .dia small{font-size:13px}
+  .dia b{font-size:18px}
+  .dia small{font-size:14px}
 
-  /* armá tu pedido: productos a la izquierda, "Tu pedido" fijo a la derecha */
-  #sec-pedido{display:grid;grid-template-columns:minmax(0,1fr) 372px;column-gap:44px;align-items:start}
+  /* armá tu pedido: productos a la izquierda, "Tu pedido" completo y fijo a la derecha */
+  #sec-pedido{display:grid;grid-template-columns:minmax(0,1fr) 420px;grid-template-rows:auto auto 1fr;column-gap:48px;align-items:start}
   #sec-pedido > h2{grid-column:1/-1}
   #sec-pedido > .pegado{display:contents}
-  #sec-pedido .tabs{grid-column:1;grid-row:2;position:sticky;top:0;z-index:4;background:var(--pan);padding:10px 0 0;gap:34px;border-bottom:1px solid var(--linea)}
-  #sec-pedido .tabs button{font-size:18px;padding:10px 0 12px}
+  #sec-pedido .tabs{grid-column:1;grid-row:2;position:sticky;top:0;z-index:4;background:var(--pan);padding:10px 0 0;gap:38px;border-bottom:1px solid var(--linea)}
+  #sec-pedido .tabs button{font-size:20px;padding:10px 0 14px}
   #sec-pedido .tabs button:hover{color:var(--tinta)}
-  #sec-pedido > .panel{grid-column:1;grid-row:3}
-  #sec-pedido .caja{grid-column:2;grid-row:2 / span 2;position:sticky;top:24px;background:var(--papel);border-radius:24px;padding:22px;gap:14px;box-shadow:var(--sombra)}
-  .caja-cab b{font-size:22px}
+  #sec-pedido > .panel{grid-column:1;grid-row:3;min-height:520px}
+  .pista{font-size:17px;margin:20px 0 18px}
+
+  #sec-pedido .caja{grid-column:2;grid-row:2 / span 2;position:sticky;top:20px;background:var(--papel);border-radius:28px;padding:26px 24px 24px;gap:0;box-shadow:var(--sombra);
+    display:flex;flex-direction:column;max-height:calc(100vh - 40px)}
+  .caja-cab{padding-bottom:4px}
+  .caja-cab b{font-size:26px}
   .caja-cab span{font-size:15px}
-  .caja-msj{font-size:15px}
-  .elegidos{flex-wrap:wrap;overflow:visible;gap:12px;padding:8px 2px 2px}
-  .elegido{width:46px;height:46px}
-  .pista{font-size:16px;margin:18px 0 16px}
-  .fichas{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-  .ficha{background:var(--papel);border-radius:22px;transition:transform .18s,box-shadow .18s}
+  .caja-barra{margin-top:26px;height:8px;flex:none}
+  .caja-barra span{font-size:12px;top:-19px}
+  .caja-msj{font-size:15px;margin-top:12px}
+  .elegidos{display:none}
+  .caja-lista{display:block;margin-top:16px;border-top:1px solid var(--linea);overflow-y:auto;min-height:0;flex:1 1 auto;scrollbar-width:thin}
+  .cl-fila{display:grid;grid-template-columns:52px minmax(0,1fr) auto;grid-template-areas:"foto txt precio" "foto pasos pasos";column-gap:12px;row-gap:6px;align-items:center;padding:14px 0;border-bottom:1px solid var(--linea)}
+  .cl-foto{grid-area:foto;border:0;background:none;padding:0;align-self:start}
+  .cl-foto img{display:block;width:52px;height:52px;border-radius:12px;object-fit:cover}
+  .cl-txt{grid-area:txt;min-width:0}
+  .cl-txt b{display:block;font-size:16px;line-height:1.2}
+  .cl-txt small{font-size:13px;color:var(--tinta2)}
+  .cl-precio{grid-area:precio;font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .cl-fila .pasos{grid-area:pasos;justify-self:start;height:36px}
+  .cl-fila .pasos button{width:36px;height:33px}
+  .cl-vacia{margin:0;padding:28px 0;color:var(--tinta2);font-size:15px;text-align:center}
+  .caja-renglon{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-top:12px;font-size:15px;color:var(--tinta2);flex:none}
+  .caja-renglon b{color:var(--rojo);font-variant-numeric:tabular-nums}
+  .caja-renglon.total{font-size:17px;color:var(--tinta);font-weight:700;padding-top:14px}
+  .caja-renglon.total b{color:var(--tinta);font-family:var(--display);font-size:30px;letter-spacing:-.02em}
+  .caja-renglon[hidden]{display:none}
+  .vaciar-mini{display:none}
+  /* el botón de pedir, dentro de "Tu pedido" */
+  .caja .barra{position:static;padding:16px 0 0;background:none;width:auto;flex:none}
+  .caja .barra p{font-size:13px;margin:0 0 10px;width:100%;border-radius:12px;padding:8px 12px}
+  .caja .barra button{font-size:19px;padding:20px 22px;border-radius:20px;box-shadow:none;transition:transform .15s,filter .15s}
+  .caja .barra button:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.06)}
+
+  .fichas{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+  .ficha{background:var(--papel);border-radius:24px;transition:transform .18s,box-shadow .18s}
   .ficha:hover{transform:translateY(-4px);box-shadow:var(--sombra)}
+  .ficha .arte{overflow:hidden}
   .ficha .arte img{transition:transform .35s}
   .ficha:hover .arte img{transform:scale(1.05)}
-  .ficha .arte{overflow:hidden}
-  .ficha .txt{padding:14px 16px 60px}
-  .ficha h4{font-size:18px}
-  .ficha .desc{font-size:14px}
-  .ficha .precio{font-size:17px}
-  .ficha .pasos{right:12px;bottom:12px}
-  .combos{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-  .combos .subt{grid-column:1/-1;font-size:22px;margin:22px 0 2px}
-  .combo{background:var(--papel);border-radius:22px;padding:16px;transition:transform .18s,box-shadow .18s}
+  .ficha .txt{padding:16px 18px 64px}
+  .ficha h4{font-size:20px}
+  .ficha .desc{font-size:15px}
+  .ficha .precio{font-size:19px}
+  .ficha .pasos{right:14px;bottom:14px}
+  .sello{font-size:12px;padding:6px 12px;top:12px;left:12px}
+  .combos{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .combos .subt{grid-column:1/-1;font-size:24px;margin:24px 0 2px}
+  .combo{background:var(--papel);border-radius:24px;padding:18px;transition:transform .18s,box-shadow .18s}
   .combo:hover{transform:translateY(-3px);box-shadow:var(--sombra)}
-  .combo h4{font-size:19px}
-  .combo p{font-size:14px}
-
-  /* el botón de pedir: flota abajo, alineado con "Tu pedido" */
-  .barra{position:fixed;z-index:8;bottom:24px;right:max(40px,calc((100vw - 1240px)/2 + 40px));width:372px;padding:0;background:none}
-  .barra p{font-size:13px;margin-bottom:8px;box-shadow:var(--sombra)}
-  .barra button{font-size:18px;padding:18px 22px;border-radius:20px;transition:transform .15s}
-  .barra button:hover:not(:disabled){transform:translateY(-2px)}
+  .combo h4{font-size:20px}
+  .combo p{font-size:15px}
+  .combo .precio{font-size:18px}
 
   /* puntos */
-  .club{margin:72px 416px 0 0;padding:36px 40px;border-radius:32px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:48px;align-items:center}
-  .club h3{font-size:36px}
-  .club p{font-size:17px}
+  .club{margin:88px 0 0;padding:44px 48px;border-radius:36px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:56px;align-items:center}
+  .club h3{font-size:42px}
+  .club p{font-size:18px}
   .club > h3,.club > p{grid-column:1}
-  .club > #club-invitado,.club > #club-socio{grid-column:2;grid-row:1 / span 2}
-  .club-btn{grid-column:1/-1;font-size:17px;padding:16px;justify-self:start;min-width:340px}
-  .pie{padding:40px 416px 120px 0;font-size:14px;text-align:left}
-  /* la columna derecha queda libre de arriba a abajo: ahí viven "Tu pedido" y el botón de pedir */
+  .club > #club-invitado,.club > #club-socio{grid-column:2;grid-row:1 / span 3;font-size:17px}
+  .club-btn{grid-column:1;font-size:18px;padding:18px 26px;justify-self:start;margin-top:8px}
+  .pie{padding:48px 0 0;font-size:15px}
 
   /* las otras pantallas: producto, pedido, cuenta */
-  .pantalla{max-width:1080px;margin:0 auto;padding:36px 0 60px;gap:20px}
-  .pantalla h2{font-size:40px}
-  .volver{font-size:16px}
-  #vista-producto{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:52px;align-items:start}
+  .pantalla{max-width:1180px;margin:0 auto;padding:40px 0 60px;gap:22px}
+  .pantalla h2{font-size:46px}
+  .volver{font-size:17px}
+  #vista-producto{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:60px;align-items:start}
   #vista-producto > .volver{grid-column:1/-1}
-  #vista-producto > .prod-foto{grid-column:1;grid-row:2 / span 9;border-radius:32px;position:sticky;top:24px;box-shadow:var(--sombra)}
+  #vista-producto > .prod-foto{grid-column:1;grid-row:2 / span 9;border-radius:36px;position:sticky;top:24px;box-shadow:var(--sombra)}
   #vista-producto > :not(.volver):not(.prod-foto){grid-column:2}
-  .prod-precio{font-size:28px}
-  .prod-desc{font-size:18px}
-  #vista-pedido{grid-template-columns:minmax(0,1fr) 420px;column-gap:52px;align-items:start}
+  .prod-precio{font-size:32px}
+  .prod-desc{font-size:19px}
+  #vista-pedido{grid-template-columns:minmax(0,1fr) 440px;column-gap:60px;align-items:start}
   #vista-pedido > .volver,#vista-pedido > h2{grid-column:1/-1}
   #vista-pedido > *{grid-column:1}
   #vista-pedido > .impresora{grid-column:2;grid-row:3 / span 12;position:sticky;top:24px}
-  #vista-cuenta,#vista-listo{max-width:560px}
+  #vista-cuenta,#vista-listo{max-width:600px}
   .campo input,.campo textarea{background:var(--papel)}
   .secundario:hover:not(:disabled){background:var(--tinta);color:var(--papel)}
 }
+
+/* pantallas anchas: más productos por fila */
+@media (min-width:1360px){
+  .fichas{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #lista-clasicos{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* monitores grandes: todo crece parejo para que no quede chico en el medio */
+@media (min-width:1700px){ .pagina{zoom:1.14} }
+@media (min-width:2200px){ .pagina{zoom:1.35} }
 </style>
 
 </head>
@@ -484,6 +520,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
   <section class="tienda" aria-label="Tienda">
     <div id="vista-menu">
       <div class="arriba">
+        <a class="marca" href="./" aria-label="Los Miga de Fausto, inicio"><img src="img/fausto.png" alt="" width="44" height="44"><span>Los Miga de <em>Fausto</em></span></a>
         <button type="button" class="cuenta-btn" id="abrir-cuenta"></button>
         <button type="button" class="tema" id="tema" role="switch" aria-checked="false" aria-label="Modo oscuro">
           <svg class="sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
@@ -524,6 +561,9 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
             <div class="caja-barra"><i id="caja-avance"></i><span id="marca24" class="fin" style="left:100%">Mínimo: 2 docenas (24)</span></div>
             <div class="caja-msj" id="caja-msj"></div>
             <div class="elegidos" id="huecos"></div>
+            <div class="caja-lista" id="caja-lista"></div>
+            <div class="caja-renglon" id="caja-desc" hidden><span id="caja-desc-t"></span><b id="caja-desc-n"></b></div>
+            <div class="caja-renglon total" id="caja-suma" hidden><span>Total</span><b id="caja-suma-n"></b></div>
             
           </div>
           <div class="tabs" role="tablist" aria-label="Qué querés pedir">
@@ -807,6 +847,13 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
       h+='<button type="button" class="elegido'+(i.t==="g"?"":" es-combo")+(i.id===ultimo?" nuevo":"")+'" data-prod="'+i.id+'" aria-label="Ver '+i.n+'"><img src="'+foto(i)+'" alt=""><b>'+cant(i.id)+'</b></button>'});
     if(h)h+='<button type="button" class="vaciar-mini" data-vaciar="1">Vaciar</button>';
     $("huecos").innerHTML=h; ultimo="";
+    /* en la computadora "Tu pedido" es una lista de verdad, con sus botones */
+    var l="";enCarro().forEach(function(i){var c=cant(i.id);
+      l+='<div class="cl-fila"><button type="button" class="cl-foto" data-prod="'+i.id+'" aria-label="Ver '+i.n+'"><img src="'+foto(i)+'" alt=""></button>'+
+         '<div class="cl-txt"><b>'+i.n+'</b><small>'+plata(i.p)+' c/u</small></div><div class="pasos" data-pasos="'+i.id+'">'+pasos(i.id)+'</div><span class="cl-precio">'+plata(c*i.p)+'</span></div>'});
+    $("caja-lista").innerHTML=l||'<p class="cl-vacia">Todavía no agregaste nada. Elegí de la izquierda y lo vas viendo acá.</p>';
+    $("caja-suma").hidden=!x.hay;$("caja-suma-n").textContent=plata(x.total);
+    $("caja-desc").hidden=!x.sueltosDesc;$("caja-desc-n").textContent="−"+plata(x.sueltosDesc);$("caja-desc-t").textContent="Descuento "+x.pct+"% en sueltos";
     var n=x.sueltos;
     $("caja-titulo").textContent=x.hay?(x.sandwiches?"Tu pedido · "+x.sandwiches:"Tu pedido"):"Tu pedido";
     $("caja-total").textContent=x.ahorro?"Ahorrás "+plata(x.ahorro):"";
@@ -950,6 +997,10 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
   try{var g0=JSON.parse(localStorage.getItem("miga-pedido3")||"null");
     if(g0)ITEMS.forEach(function(i){var c=Math.floor(g0[i.id]);if(c>0)q[i.id]=Math.min(96,c)})}catch(e){}
   if(!BASE)try{var s0=JSON.parse(localStorage.getItem("miga-socio")||"null");if(s0&&s0.nombre)socio={nombre:String(s0.nombre).slice(0,40),mail:String(s0.mail||"").slice(0,80),cel:String(s0.cel||"").slice(0,20),ofertas:!!s0.ofertas,puntos:Math.max(0,Math.floor(s0.puntos)||0)}}catch(e){}
+  /* en la computadora el botón de pedir vive dentro de "Tu pedido"; en el celular, abajo de todo */
+  var GRANDE=window.matchMedia?window.matchMedia("(min-width:1000px)"):null;
+  function ubicarBarra(){var b=$("barra"),donde=GRANDE&&GRANDE.matches?$("caja"):$("vista-menu");if(b.parentNode!==donde)donde.appendChild(b)}
+  ubicarBarra();if(GRANDE){if(GRANDE.addEventListener)GRANDE.addEventListener("change",ubicarBarra);else if(GRANDE.addListener)GRANDE.addListener(ubicarBarra)}
   pintarDias(); pintarCatalogo(); refrescar();
   setInterval(reloj,1000);
   cargar();
