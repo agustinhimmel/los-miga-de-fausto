@@ -514,6 +514,8 @@ details .dos{margin-top:8px}
 .switch input:checked + i::after{transform:translateX(18px)}
 .subtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .g-nota{font-size:12px;color:var(--tinta2);margin:8px 0 0}
+.ayuda summary{cursor:pointer;font-size:15px}
+.ayuda .lista-alertas li{align-items:flex-start}
 :root{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4}
 @media (prefers-color-scheme: dark){:root{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181}}
 /* precio, costo y lo que deja: cada uno con su color */
@@ -817,10 +819,17 @@ details .dos{margin-top:8px}
       h+='<div class="tarjeta"><h2>'+(e.id?"Editar "+esc(e.nombre):"Nuevo insumo")+'</h2><form class="g-form" data-guardar="insumo" data-id="'+(e.id||"")+'"><div class="campo ancho" style="grid-column:span 2"><label>Nombre</label><input class="g-in" name="nombre" required value="'+esc(e.nombre||"")+'"></div>'+
         '<div class="campo"><label>Se mide en</label><select name="unidad"><option value="g"'+(e.unidad==="g"?" selected":"")+'>gramos</option><option value="ml"'+(e.unidad==="ml"?" selected":"")+'>mililitros</option><option value="un"'+(e.unidad==="un"?" selected":"")+'>unidades</option></select></div>'+
         (e.es_preparacion?'<div class="campo"><label>Cuánto rinde la preparación</label><input class="g-in" name="rend" inputmode="decimal" value="'+(e.rendimiento||"")+'"></div>':
-        '<div class="campo"><label>Precio que pagás ($)</label><input class="g-in" name="precio" inputmode="decimal" value="'+(e.precio_compra||"")+'"></div><div class="campo"><label>Por cuánta cantidad</label><input class="g-in" name="cantc" inputmode="decimal" value="'+(e.cantidad_compra||"")+'"></div>')+
-        '<div class="campo"><label>Stock que tenés hoy</label><input class="g-in" name="stock" inputmode="decimal" value="'+(e.id?+e.stock:"")+'"></div><div class="campo"><label>Avisarme si baja de</label><input class="g-in" name="min" inputmode="decimal" value="'+(e.id?+e.stock_minimo:"")+'"></div>'+
+        e.id?'<div class="campo"><label>Último precio pagado ($)</label><input class="g-in" name="precio" inputmode="decimal" value="'+(e.precio_compra||"")+'"></div><div class="campo"><label>Por cuánta cantidad</label><input class="g-in" name="cantc" inputmode="decimal" value="'+(e.cantidad_compra||"")+'"></div>':"")+
+        (e.id?'<div class="campo"><label>Lo que tenés hoy (para corregir)</label><input class="g-in" name="stock" inputmode="decimal" value="'+(+e.stock)+'"></div>':"")+
+        '<div class="campo"><label>Avisarme si baja de</label><input class="g-in" name="min" inputmode="decimal" placeholder="Ej: 500" value="'+(e.id?+e.stock_minimo:"")+'"></div>'+
+        (e.id?"":'<p class="g-nota ancho">Acá solo lo das de alta. El precio y la cantidad los cargás después con "Anotar compra", la primera vez que lo comprás.</p>')+
         (e.id?"":'<label class="campo ancho" style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px"><input type="checkbox" name="prep" style="width:18px;height:18px"> Es una preparación (algo que cocinás antes, como el empaste)</label>')+
         '<div class="g-acc"><button class="boton" type="submit">Guardar</button><button type="button" class="mini" data-form="">Cancelar</button></div></form></div>'}
+    h+='<details class="tarjeta ayuda"><summary><b>¿Cómo se usa?</b></summary><ul class="lista-alertas" style="margin-top:10px">'+
+      '<li><span class="pill bien">Anotar compra</span><span>Cada vez que comprás algo (ej: 1 kg de jamón a $7.700). Suma al stock y actualiza el precio, así el costo de cada sándwich queda al día.</span></li>'+
+      '<li><span class="pill gris">Anotar producción</span><span>Cuando hacés sándwiches: elegís el gusto y cuántas armadas. Descuenta del stock todo lo que lleva la receta.</span></li>'+
+      '<li><span class="pill gris">Nuevo insumo</span><span>Solo para algo que nunca compraste antes (ej: pan negro). Le ponés el nombre y en qué se mide; el precio entra con la primera compra.</span></li>'+
+      '<li><span class="pill medio">Editar</span><span>Para corregir: si el stock no coincide con lo que tenés en la heladera, o para avisarte cuando algo se está por acabar.</span></li></ul></details>';
     h+='<div class="kpis">'+kpi("Plata en stock",plata(valor),"a precio de compra")+kpi("Insumos",crudos.length,preps.length+" preparaciones")+kpi("Bajo el mínimo",bajos,bajos?"hay que comprar":"todo bien",bajos?"alerta":"")+'</div>'+
       '<div class="subtabs chips" style="margin:0 0 14px;padding:0">'+[["insumos","Insumos"],["producir","Qué puedo producir"],["preparaciones","Preparaciones"],["movimientos","Movimientos"]].map(function(t){return '<button type="button" data-stab="'+t[0]+'" aria-pressed="'+(est.tab===t[0])+'">'+t[1]+'</button>'}).join("")+'</div>';
     if(est.tab==="insumos"){var uso={};ps.filter(function(p){return p.tipo==="gusto"}).forEach(function(p){var n=necesita(p);Object.keys(n).forEach(function(k){if(!uso[k]||n[k]>uso[k].q)uso[k]={q:n[k],p:p}})});
@@ -1006,12 +1015,14 @@ details .dos{margin-top:8px}
     if(f.dataset.guardar==="produccion"){var a=numSimple(d.get("a"));if(!d.get("prod")||!(a>0)){alert("Elegí qué hiciste y cuántas armadas.");return}if(b)b.disabled=true;
       M.llamar("rpc/registrar_produccion",{cuerpo:{p_producto:d.get("prod"),p_armadas:a,p_fecha:d.get("f")||null,p_nota:null}}).then(hecho,mal);return}
     if(f.dataset.guardar==="insumo"){var n=String(d.get("nombre")||"").trim();if(n.length<2){alert("Falta el nombre.");return}
-      var o={nombre:n,unidad:d.get("unidad"),stock:numSimple(d.get("stock"))||0,stock_minimo:numSimple(d.get("min"))||0,actualizado:new Date().toISOString()};
+      var o={nombre:n,unidad:d.get("unidad"),stock_minimo:numSimple(d.get("min"))||0,actualizado:new Date().toISOString()};if(d.has("stock"))o.stock=numSimple(d.get("stock"))||0;
       if(d.has("precio")){o.precio_compra=numSimple(d.get("precio"))||null;o.cantidad_compra=numSimple(d.get("cantc"))||null}
       if(d.has("rend"))o.rendimiento=numSimple(d.get("rend"))||null;
       if(b)b.disabled=true;
       if(f.dataset.id)M.llamar("insumos?id=eq."+f.dataset.id,{metodo:"PATCH",cuerpo:o}).then(hecho,mal);
-      else{o.es_preparacion=!!d.get("prep");M.llamar("insumos",{cuerpo:o}).then(hecho,mal)}}});
+      else{o.es_preparacion=!!d.get("prep");M.llamar("insumos",{cuerpo:o}).then(function(r){var nuevo=r&&r[0];
+        /* recién creado: si es algo que se compra, abre directo "Anotar compra" con ese insumo */
+        if(nuevo&&!nuevo.es_preparacion){est.form="compra";est.insumo=nuevo.id;return recargar()}return hecho()},mal)}}});
 })();
 </script>
 
