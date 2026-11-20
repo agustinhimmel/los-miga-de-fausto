@@ -47,6 +47,19 @@ h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
 .con-ver{position:relative}
 .con-ver input{padding-right:64px}
 .con-ver .ver{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;padding:8px 10px;font-size:13px;font-weight:700;color:var(--tinta2);cursor:pointer}
+.fuerza{height:6px;border-radius:99px;background:var(--linea);overflow:hidden;margin-top:4px}
+.fuerza i{display:block;height:100%;width:0;border-radius:99px;background:var(--rojo);transition:width .2s,background-color .2s}
+.requisitos{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px;font-size:13px;color:var(--tinta2)}
+.requisitos li::before{content:"○";display:inline-block;width:18px}
+.requisitos li.si{color:var(--verde);font-weight:600}
+.requisitos li.si::before{content:"✓"}
+.requisitos li.no{color:var(--rojo);font-weight:600}
+.requisitos li.no::before{content:"✕"}
+#fuerza-texto{margin-top:6px}
+#coincide.si{color:var(--verde);font-weight:600}
+#coincide.no{color:var(--rojo);font-weight:600}
+.campo input.mal{border-color:var(--rojo)}
+.campo input.bien{border-color:var(--verde)}
 .enlace{display:block;width:100%;background:none;border:0;padding:12px 0 4px;font-size:14px;color:var(--tinta2);text-decoration:underline;cursor:pointer}
 .aviso-ok{background:var(--verde-suave);color:var(--verde);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;margin:0 0 10px}
 .error{color:var(--rojo);font-size:14px;font-weight:600;margin:0 0 10px}
@@ -97,6 +110,27 @@ details .dos{margin-top:8px}
 .nav button svg{width:22px;height:22px}
 .nav button[aria-current="page"]{color:var(--rojo)}
 .nav .globo{position:absolute;top:4px;left:calc(50% + 6px);background:var(--rojo);color:#fff;border-radius:99px;font-size:11px;min-width:18px;padding:0 5px;line-height:18px}
+@media (min-width:900px){
+  .marco{max-width:1280px;padding:28px 40px 60px}
+  body:has(.nav:not([hidden])) .marco{margin-left:228px;max-width:none}
+  .cab h1{font-size:26px}
+  #entrada,#sin-permiso,#espera-mail{max-width:460px;margin:48px auto;padding:28px}
+  .nav{top:0;bottom:0;right:auto;width:228px;border-top:0;border-right:1px solid var(--linea);padding:28px 14px;justify-content:flex-start;align-items:flex-start}
+  .nav div{flex-direction:column;gap:4px}
+  .nav button{flex:none;display:flex;align-items:center;justify-content:flex-start;gap:14px;font-size:15px;padding:13px 14px;border-radius:12px;width:100%}
+  .nav button:hover{background:var(--pan);color:var(--tinta)}
+  .nav button[aria-current="page"]{background:var(--rojo-suave)}
+  .nav .globo{position:static;margin-left:auto}
+  #v-inicio,#lista-pedidos{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px;align-items:start}
+  #v-inicio > .aviso{grid-column:1/-1;max-width:520px}
+  #v-inicio > .tarjeta,#lista-pedidos > .tarjeta{margin:0;padding:22px}
+  #lista-pedidos > .vacio{grid-column:1/-1}
+  .chips{flex-wrap:wrap;overflow:visible;margin:0 0 18px;padding:0}
+  .chips button{font-size:15px;padding:10px 18px}
+  .chips button:hover{border-color:var(--tinta)}
+  #v-pronto .tarjeta{max-width:620px;padding:28px}
+  .boton{transition:filter .15s}.boton:hover:not(:disabled){filter:brightness(1.08)}
+}
 .vacio{text-align:center;color:var(--tinta2);padding:28px 8px}
 [hidden]{display:none!important}
 </style>
@@ -119,9 +153,18 @@ details .dos{margin-top:8px}
     <div class="campo" id="campo-mail"><label for="mail">Mail</label><input id="mail" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false"></div>
     <div class="campo" id="campo-clave"><label for="clave" id="clave-l">Contraseña</label>
       <div class="con-ver"><input id="clave" type="password" autocomplete="current-password"><button type="button" class="ver" data-verclave="clave">Ver</button></div>
-      <small class="chica" id="clave-ayuda" hidden>8 o más, entre letras y números.</small></div>
+      <div id="clave-ayuda" hidden>
+        <div class="fuerza"><i id="fuerza-barra"></i></div>
+        <p class="chica" id="fuerza-texto">Tiene que tener:</p>
+        <ul class="requisitos">
+          <li id="req-largo">8 caracteres o más</li>
+          <li id="req-letra">Al menos una letra</li>
+          <li id="req-numero">Al menos un número</li>
+        </ul>
+      </div></div>
     <div class="campo" id="campo-clave2" hidden><label for="clave2">Repetí la contraseña</label>
-      <div class="con-ver"><input id="clave2" type="password" autocomplete="new-password"><button type="button" class="ver" data-verclave="clave2">Ver</button></div></div>
+      <div class="con-ver"><input id="clave2" type="password" autocomplete="new-password"><button type="button" class="ver" data-verclave="clave2">Ver</button></div>
+      <small class="chica" id="coincide"></small></div>
     <p class="error" id="entrada-error" hidden></p>
     <p class="aviso-ok" id="entrada-ok" hidden></p>
     <button class="boton" type="submit" id="entrada-b">Entrar</button>
@@ -129,6 +172,8 @@ details .dos{margin-top:8px}
     <button class="enlace" type="button" id="olvide">Olvidé mi contraseña</button>
     <button class="boton suave" type="button" id="modo" style="margin-top:8px">Es mi primera vez: crear mi cuenta</button>
   </form>
+
+  <div class="tarjeta" id="espera-mail" hidden><h2>Un segundo…</h2><p class="chica">Estamos confirmando tu enlace.</p></div>
 
   <div class="tarjeta" id="sin-permiso" hidden>
     <h2>Tu cuenta ya está creada</h2>
@@ -325,7 +370,7 @@ details .dos{margin-top:8px}
     $("olvide").hidden=m!=="entrar";$("modo").hidden=nueva;$("reenviar").hidden=true;
     $("modo").textContent=m==="entrar"?"Es mi primera vez: crear mi cuenta":"Ya tengo cuenta: entrar";
     $("entrada-error").hidden=true;$("clave").value="";$("clave2").value="";
-    ["clave","clave2"].forEach(function(i){$(i).type="password"});document.querySelectorAll("[data-verclave]").forEach(function(b){b.textContent="Ver"})}
+    ["clave","clave2"].forEach(function(i){$(i).type="password"});document.querySelectorAll("[data-verclave]").forEach(function(b){b.textContent="Ver"});revisarClave()}
   function mal(t){$("entrada-b").disabled=false;$("entrada-ok").hidden=true;$("entrada-error").hidden=false;$("entrada-error").textContent=t}
   function bien(t){$("entrada-b").disabled=false;$("entrada-error").hidden=true;$("entrada-ok").hidden=false;$("entrada-ok").textContent=t}
   function cuenta(camino,cuerpo,conSesion,metodo){
@@ -333,6 +378,20 @@ details .dos{margin-top:8px}
     return fetch(BASE.url+"/auth/v1/"+camino,{method:metodo||"POST",headers:h,body:JSON.stringify(cuerpo)})
       .then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok){var e=new Error("no");e.estado=r.status;e.codigo=j.error_code||j.code||"";throw e}return j})})}
   function porque(e,otro){return !e.estado?"No pudimos conectar. Revisá tu conexión.":e.estado===429||e.codigo==="over_email_send_rate_limit"?"Se hicieron muchos intentos seguidos. Esperá unos minutos y probá de nuevo.":otro}
+  /* la contraseña se revisa mientras se escribe: qué le falta, qué tan segura es y si las dos coinciden */
+  function revisarClave(){var eligiendo=modoActual==="crear"||modoActual==="nueva",v=$("clave").value,v2=$("clave2").value;
+    var largo=v.length>=8,letra=/[a-zA-ZñÑáéíóúÁÉÍÓÚ]/.test(v),num=/\d/.test(v),ok=largo&&letra&&num;
+    [["req-largo",largo],["req-letra",letra],["req-numero",num]].forEach(function(r){$(r[0]).className=!v?"":r[1]?"si":"no"});
+    var puntos=(largo?1:0)+(letra&&num?1:0)+(v.length>=12?1:0)+(/[a-z]/.test(v)&&/[A-Z]/.test(v)||/[^a-zA-Z0-9]/.test(v)?1:0);
+    if(!ok)puntos=Math.min(puntos,1);
+    var nivel=[["",""],["Todavía es débil","var(--rojo)"],["Aceptable","var(--ambar)"],["Buena","var(--verde)"],["Muy segura","var(--verde)"]][v?Math.max(1,puntos):0];
+    $("fuerza-barra").style.width=(v?Math.max(1,puntos)*25:0)+"%";$("fuerza-barra").style.background=nivel[1]||"var(--linea)";
+    $("fuerza-texto").textContent=!v?"Tiene que tener:":ok?"Seguridad: "+nivel[0]:"Le falta:";
+    $("clave").className=!eligiendo||!v?"":ok?"bien":"mal";
+    var igual=v2&&v===v2;$("coincide").className=!v2?"":igual?"si":"no";
+    $("coincide").textContent=!eligiendo||!v2?"":igual?"✓ Las dos coinciden":"✕ No coinciden todavía";
+    $("clave2").className=!eligiendo||!v2?"":igual?"bien":"mal"}
+  $("clave").addEventListener("input",revisarClave);$("clave2").addEventListener("input",revisarClave);
   $("modo").addEventListener("click",function(){$("entrada-ok").hidden=true;modo(modoActual==="entrar"?"crear":"entrar")});
   $("olvide").addEventListener("click",function(){$("entrada-ok").hidden=true;modo("olvide")});
   document.querySelectorAll("[data-verclave]").forEach(function(b){b.addEventListener("click",function(){var i=$(b.dataset.verclave),ver=i.type==="password";i.type=ver?"text":"password";b.textContent=ver?"Ocultar":"Ver"})});
@@ -362,7 +421,14 @@ details .dos{margin-top:8px}
     cuenta("user",{password:c},true,"PUT").then(function(){modo("entrar");$("entrada-b").disabled=false;adentro()},
       function(er){mal(porque(er,er.codigo==="same_password"?"Esa es la contraseña que ya tenías. Elegí otra.":er.estado===401||er.estado===403?"El enlace venció. Pedí uno nuevo con \"Olvidé mi contraseña\".":"No se pudo guardar. Probá de nuevo."))})});
   /* al volver desde el enlace de un mail (confirmar la cuenta o cambiar la contraseña) */
-  function desdeMail(){var h=new URLSearchParams(location.hash.replace(/^#/,""));if(!h.get("access_token")&&!h.get("error"))return false;
+  function desdeMail(){var h=new URLSearchParams(location.hash.replace(/^#/,"")),q=new URLSearchParams(location.search);
+    /* enlace corto de nuestros mails: /panel/?c=CODIGO (confirmar la cuenta) o /panel/?t=clave&c=CODIGO (cambiar la contraseña) */
+    if(q.get("c")){var cod=q.get("c"),tipo=q.get("t")==="clave"?"recovery":"signup";history.replaceState(null,"",AQUI);guardar(null);afuera2();
+      $("entrada").hidden=true;$("espera-mail").hidden=false;
+      cuenta("verify",{type:tipo,token_hash:cod}).catch(function(e){if(tipo==="signup"&&e.estado)return cuenta("verify",{type:"email",token_hash:cod});throw e})
+        .then(function(j){$("espera-mail").hidden=true;guardar(j);if(tipo==="recovery"){afuera2();modo("nueva")}else adentro()},
+          function(e){$("espera-mail").hidden=true;afuera();mal(e.estado?"Ese enlace venció o ya se usó. Si tu cuenta ya está confirmada, entrá con tu mail y tu contraseña.":"No pudimos conectar. Revisá tu conexión y abrí el enlace de nuevo.")});
+      return true}if(!h.get("access_token")&&!h.get("error"))return false;
     history.replaceState(null,"",AQUI);
     if(h.get("error")){afuera();mal("Ese enlace venció o ya se usó. Si era para cambiar la contraseña, pedí otro con \"Olvidé mi contraseña\".");return true}
     guardar({access_token:h.get("access_token"),refresh_token:h.get("refresh_token"),expires_in:+h.get("expires_in")||3600});

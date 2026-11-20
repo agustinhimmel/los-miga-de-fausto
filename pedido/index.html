@@ -54,6 +54,20 @@ h1,h2{font-family:var(--display);margin:0;line-height:1.08}
 .total{display:flex;justify-content:space-between;font-weight:700;border-top:1px solid var(--linea);padding-top:10px;margin-top:10px}
 .boton{display:block;border-radius:14px;padding:14px;background:var(--wa);color:#fff;font-weight:700;text-align:center;text-decoration:none}
 .boton.suave{background:var(--papel);color:var(--tinta);border:1px solid var(--linea);margin-top:8px}
+@media (min-width:900px){
+  .marco{max-width:1080px;padding:32px 40px 60px}
+  .cab img{width:52px;height:52px}.cab b{font-size:24px}
+  #todo{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+  #todo > *{grid-column:2;margin:0}
+  #todo > .ahora{grid-column:1;grid-row:1 / span 5;padding:36px}
+  .ahora .chica{font-size:15px}
+  .ahora h1{font-size:52px;margin:10px 0 12px}
+  .ahora p{font-size:19px}
+  #mapa{height:480px;margin-top:24px;border-radius:20px}
+  .tarjeta{padding:24px}
+  .pasos li{font-size:17px}
+  #espera{max-width:520px;margin:60px auto}
+}
 [hidden]{display:none!important}
 </style>
 </head>

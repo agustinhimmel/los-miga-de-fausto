@@ -69,6 +69,7 @@ body,.tienda,.ficha,.como,.dia,.fila,.combo{transition:background-color .35s,bor
 .hero h1{font-family:var(--display);font-weight:800;font-size:40px;line-height:.92;letter-spacing:-.03em;margin:0}
 .hero h1 em{font-style:normal;color:var(--rojo)}
 .hero p{margin:12px 0 0;color:var(--tinta2);font-size:15px}
+.hero-cta{display:none}
 .portada{display:block;width:calc(100% - 32px);margin:0 16px;border-radius:22px;aspect-ratio:16/10;object-fit:cover}
 
 .como{margin:16px 16px 0;padding:14px 12px;border-radius:18px;background:var(--pan);border:1px solid var(--linea)}
@@ -349,6 +350,128 @@ fieldset.campo{border:0;margin:0;padding:0}
   .punto{animation:latido 1.6s ease-out infinite}
   @keyframes latido{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 0 9px transparent}}
 }
+/* La tienda en pantallas grandes. armar-sitio.py lo suma al final de los estilos del sitio.
+   En el celular no cambia nada: todo esto vale solo desde 700 px (tablet) y 1000 px (computadora). */
+.hero-cta{display:none}
+button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
+
+/* ---------- tablet ---------- */
+@media (min-width:700px){
+  .pagina{max-width:760px}
+  .fichas{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .hero h1{font-size:56px}
+  .portada{aspect-ratio:16/8}
+}
+
+/* ---------- computadora ---------- */
+@media (min-width:1000px){
+  .pagina{max-width:1240px;padding:0 40px 80px;display:block}
+  .tienda{background:none;border:0;border-radius:0;box-shadow:none;overflow:visible}
+  #vista-menu{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);column-gap:56px;align-items:center}
+  #vista-menu > *{grid-column:1/-1}
+
+  /* arriba: cuenta y modo claro/oscuro */
+  .arriba{padding:22px 0 0;justify-content:flex-end;gap:14px}
+  .cuenta-btn{font-size:14px;padding:9px 16px;background:var(--papel)}
+  .cuenta-btn:hover{border-color:var(--tinta)}
+
+  /* portada: nombre a la izquierda, foto a la derecha */
+  #vista-menu > .hero{grid-column:1;padding:40px 0 48px}
+  #vista-menu > .portada{grid-column:2;width:100%;margin:0;aspect-ratio:5/4;border-radius:32px;box-shadow:var(--sombra)}
+  .logo{gap:22px;align-items:center}
+  .logo .cara{width:124px;height:124px}
+  .hero h1{font-size:clamp(64px,7.2vw,104px);line-height:.88}
+  .hero p{font-size:21px;margin-top:22px;max-width:26ch}
+  .hero-cta{display:inline-flex;align-items:center;gap:10px;margin-top:28px;background:var(--rojo);color:#fff;font-weight:700;font-size:18px;
+    padding:16px 26px;border-radius:999px;text-decoration:none;box-shadow:var(--sombra);transition:transform .15s}
+  .hero-cta:hover{transform:translateY(-2px)}
+
+  /* cómo se pide: una franja */
+  .como{margin:24px 0 0;padding:26px 32px;border-radius:26px;background:var(--papel);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:40px}
+  .como h2{font-size:14px;text-align:left}
+  .como ol{margin:0;gap:24px}
+  .como li{grid-template-columns:auto 1fr;justify-items:start;align-items:center;text-align:left;font-size:17px;gap:12px}
+  .como li::before{width:40px;height:40px;font-size:19px}
+  .como p{margin:0;text-align:right;font-size:14px;max-width:24ch}
+
+  /* pasos */
+  .paso{padding:56px 0 0}
+  .paso > h2{font-size:36px;margin:0 0 20px;gap:14px}
+  .vivo-cab{justify-content:flex-start;gap:24px;font-size:12px;padding:0 0 12px}
+  .vivo-cab #reloj{font-size:14px}
+  .dias-fila{flex-wrap:wrap;overflow:visible;margin:0;padding:0;gap:12px}
+  .dia{width:156px;padding:14px;background:var(--papel);border-radius:16px;transition:transform .15s,border-color .15s}
+  .dia:hover:not(:disabled){transform:translateY(-2px);border-color:var(--tinta)}
+  .dia b{font-size:16px}
+  .dia small{font-size:13px}
+
+  /* armá tu pedido: productos a la izquierda, "Tu pedido" fijo a la derecha */
+  #sec-pedido{display:grid;grid-template-columns:minmax(0,1fr) 372px;column-gap:44px;align-items:start}
+  #sec-pedido > h2{grid-column:1/-1}
+  #sec-pedido > .pegado{display:contents}
+  #sec-pedido .tabs{grid-column:1;grid-row:2;position:sticky;top:0;z-index:4;background:var(--pan);padding:10px 0 0;gap:34px;border-bottom:1px solid var(--linea)}
+  #sec-pedido .tabs button{font-size:18px;padding:10px 0 12px}
+  #sec-pedido .tabs button:hover{color:var(--tinta)}
+  #sec-pedido > .panel{grid-column:1;grid-row:3}
+  #sec-pedido .caja{grid-column:2;grid-row:2 / span 2;position:sticky;top:24px;background:var(--papel);border-radius:24px;padding:22px;gap:14px;box-shadow:var(--sombra)}
+  .caja-cab b{font-size:22px}
+  .caja-cab span{font-size:15px}
+  .caja-msj{font-size:15px}
+  .elegidos{flex-wrap:wrap;overflow:visible;gap:12px;padding:8px 2px 2px}
+  .elegido{width:46px;height:46px}
+  .pista{font-size:16px;margin:18px 0 16px}
+  .fichas{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  .ficha{background:var(--papel);border-radius:22px;transition:transform .18s,box-shadow .18s}
+  .ficha:hover{transform:translateY(-4px);box-shadow:var(--sombra)}
+  .ficha .arte img{transition:transform .35s}
+  .ficha:hover .arte img{transform:scale(1.05)}
+  .ficha .arte{overflow:hidden}
+  .ficha .txt{padding:14px 16px 60px}
+  .ficha h4{font-size:18px}
+  .ficha .desc{font-size:14px}
+  .ficha .precio{font-size:17px}
+  .ficha .pasos{right:12px;bottom:12px}
+  .combos{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .combos .subt{grid-column:1/-1;font-size:22px;margin:22px 0 2px}
+  .combo{background:var(--papel);border-radius:22px;padding:16px;transition:transform .18s,box-shadow .18s}
+  .combo:hover{transform:translateY(-3px);box-shadow:var(--sombra)}
+  .combo h4{font-size:19px}
+  .combo p{font-size:14px}
+
+  /* el botón de pedir: flota abajo, alineado con "Tu pedido" */
+  .barra{position:fixed;z-index:8;bottom:24px;right:max(40px,calc((100vw - 1240px)/2 + 40px));width:372px;padding:0;background:none}
+  .barra p{font-size:13px;margin-bottom:8px;box-shadow:var(--sombra)}
+  .barra button{font-size:18px;padding:18px 22px;border-radius:20px;transition:transform .15s}
+  .barra button:hover:not(:disabled){transform:translateY(-2px)}
+
+  /* puntos */
+  .club{margin:72px 416px 0 0;padding:36px 40px;border-radius:32px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:48px;align-items:center}
+  .club h3{font-size:36px}
+  .club p{font-size:17px}
+  .club > h3,.club > p{grid-column:1}
+  .club > #club-invitado,.club > #club-socio{grid-column:2;grid-row:1 / span 2}
+  .club-btn{grid-column:1/-1;font-size:17px;padding:16px;justify-self:start;min-width:340px}
+  .pie{padding:40px 416px 120px 0;font-size:14px;text-align:left}
+  /* la columna derecha queda libre de arriba a abajo: ahí viven "Tu pedido" y el botón de pedir */
+
+  /* las otras pantallas: producto, pedido, cuenta */
+  .pantalla{max-width:1080px;margin:0 auto;padding:36px 0 60px;gap:20px}
+  .pantalla h2{font-size:40px}
+  .volver{font-size:16px}
+  #vista-producto{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:52px;align-items:start}
+  #vista-producto > .volver{grid-column:1/-1}
+  #vista-producto > .prod-foto{grid-column:1;grid-row:2 / span 9;border-radius:32px;position:sticky;top:24px;box-shadow:var(--sombra)}
+  #vista-producto > :not(.volver):not(.prod-foto){grid-column:2}
+  .prod-precio{font-size:28px}
+  .prod-desc{font-size:18px}
+  #vista-pedido{grid-template-columns:minmax(0,1fr) 420px;column-gap:52px;align-items:start}
+  #vista-pedido > .volver,#vista-pedido > h2{grid-column:1/-1}
+  #vista-pedido > *{grid-column:1}
+  #vista-pedido > .impresora{grid-column:2;grid-row:3 / span 12;position:sticky;top:24px}
+  #vista-cuenta,#vista-listo{max-width:560px}
+  .campo input,.campo textarea{background:var(--papel)}
+  .secundario:hover:not(:disabled){background:var(--tinta);color:var(--papel)}
+}
 </style>
 
 </head>
@@ -371,6 +494,7 @@ fieldset.campo{border:0;margin:0;padding:0}
           <h1>Los Miga<br>de <em>Fausto</em></h1>
         </div>
         <p>Sándwiches de miga caseros, triples y hechos a pedido.</p>
+        <a class="hero-cta" href="#sec-pedido">Armá tu pedido <span aria-hidden="true">→</span></a>
       </header>
       <img class="portada" src="img/foto-bandeja.jpg" alt="Bandeja de sándwiches de miga surtidos">
 
