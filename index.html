@@ -8,7 +8,10 @@
 <meta name="description" content="Sándwiches de miga caseros, triples y hechos a pedido.">
 <meta property="og:title" content="Los Miga de Fausto">
 <meta property="og:description" content="Sándwiches de miga caseros, triples y hechos a pedido.">
-<meta property="og:image" content="img/foto-bandeja.jpg">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://agustinhimmel.github.io/los-miga-de-fausto/">
+<meta property="og:image" content="https://agustinhimmel.github.io/los-miga-de-fausto/img/foto-bandeja.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#d5202c">
 <link rel="icon" type="image/png" href="img/fausto.png">
 <link rel="apple-touch-icon" href="img/fausto.png">
@@ -540,7 +543,7 @@ fieldset.campo{border:0;margin:0;padding:0}
   /* t: g = gusto suelto, c = combo, x = extra. "mas" es el valor suelto de lo que un combo trae además de sándwiches. */
   var ITEMS=[
     {id:"jq",t:"g",tab:"clasicos",n:"Jamón y queso",d:"El de siempre.",p:2000,e:"top",
-     l:"El clásico que no falta en ninguna mesa. Jamón cocido y queso, con nuestro empaste suave de mayonesa."},
+     l:"El clásico que no falta en ninguna mesa. Jamón cocido y queso, con un toque suave de mayonesa."},
     {id:"jqt",t:"g",tab:"clasicos",n:"Jamón, queso y tomate",d:"Con tomate fresco.",p:2200,
      l:"Jamón cocido, queso y rodajas de tomate fresco. El más fresco de los clásicos."},
     {id:"jqh",t:"g",tab:"clasicos",n:"Jamón, queso y huevo",d:"Con huevo pisado.",p:2200,
@@ -760,9 +763,10 @@ fieldset.campo{border:0;margin:0;padding:0}
     $("club-tengo").style.width=Math.min(100,100*socio.puntos/pr.pts)+"%";
     $("club-sumo").style.width=Math.max(0,Math.min(100-100*socio.puntos/pr.pts,100*x.puntos/pr.pts))+"%";
     $("club-meta").textContent=pr.pts.toLocaleString("es-AR")+" ★ "+pr.n;
-    $("club-texto").textContent=x.puntos===0?"Tenés "+socio.puntos+" puntos. Te faltan "+(pr.pts-socio.puntos)+" para una "+pr.n.toLowerCase()+".":
-      llego>=pr.pts?"Con este pedido llegás a "+llego+" puntos: ¡ya podés cambiarlos por una "+pr.n.toLowerCase()+"!":
-      "Tenés "+socio.puntos+" y con este pedido sumás "+x.puntos+". Te faltan "+(pr.pts-llego)+" para una "+pr.n.toLowerCase()+".";
+    var nro=function(v){return v.toLocaleString("es-AR")};
+    $("club-texto").textContent=x.puntos===0?"Tenés "+nro(socio.puntos)+" puntos. Te faltan "+nro(pr.pts-socio.puntos)+" para una "+pr.n.toLowerCase()+".":
+      llego>=pr.pts?"Con este pedido llegás a "+nro(llego)+" puntos: ¡ya podés cambiarlos por una "+pr.n.toLowerCase()+"!":
+      "Tenés "+nro(socio.puntos)+" y con este pedido sumás "+nro(x.puntos)+". Te faltan "+nro(pr.pts-llego)+" para una "+pr.n.toLowerCase()+".";
     $("club-btn").textContent="Ver mis puntos y canjes";
   }
   function pintarCuenta(){
