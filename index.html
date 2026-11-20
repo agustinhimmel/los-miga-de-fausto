@@ -374,7 +374,7 @@ fieldset.campo{border:0;margin:0;padding:0}
       <section class="como" aria-label="Cómo se pide">
         <h2>Cómo se pide</h2>
         <ol><li>Elegí el día</li><li>Armá tu pedido</li><li>Pedí por WhatsApp</li></ol>
-        <p>Te confirmamos y pagás al recibir.</p>
+        <p>Pedido mínimo: 2 docenas. Te confirmamos y pagás al recibir.</p>
       </section>
 
       <section class="paso">
@@ -388,7 +388,7 @@ fieldset.campo{border:0;margin:0;padding:0}
         <div class="pegado">
           <div class="caja" id="caja">
             <div class="caja-cab"><b id="caja-titulo">Tu pedido</b><span id="caja-total"></span></div>
-            <div class="caja-barra"><i id="caja-avance"></i><em></em><span id="marca12" style="left:50%">12 sueltos · 5% menos</span><span id="marca24" class="fin" style="left:100%">24 · 10% menos</span></div>
+            <div class="caja-barra"><i id="caja-avance"></i><span id="marca24" class="fin" style="left:100%">Mínimo: 2 docenas (24)</span></div>
             <div class="caja-msj" id="caja-msj"></div>
             <div class="elegidos" id="huecos"></div>
             
@@ -579,14 +579,17 @@ fieldset.campo{border:0;margin:0;padding:0}
      l:"Gaseosa de litro y medio, bien fría. Elegí el sabor en las aclaraciones del pedido: cola, lima-limón o naranja."},
     {id:"agua",t:"x",tab:"bebidas",gr:"Gaseosas y aguas",n:"Agua saborizada 1,5 L",d:"Pomelo o manzana.",p:2800,foto:"extra-agua.jpg",
      l:"Agua saborizada de litro y medio, bien fría. Elegí pomelo o manzana en las aclaraciones del pedido."},
-    {id:"andes",t:"x",tab:"bebidas",gr:"Cervezas",n:"Andes",d:"Rubia, lata de 473 ml.",p:2200,foto:"beb-andes.jpg",l:"Cerveza Andes Origen rubia en lata de 473 ml. Sale helada. Solo para mayores de 18 años."},
-    {id:"heineken",t:"x",tab:"bebidas",gr:"Cervezas",n:"Heineken",d:"Lata de 473 ml.",p:3000,foto:"beb-heineken.jpg",l:"Cerveza Heineken en lata de 473 ml. Sale helada. Solo para mayores de 18 años."},
+    {id:"heineken",t:"x",tab:"bebidas",gr:"Cervezas",n:"Heineken lata",d:"Lata de 473 ml.",p:3000,foto:"beb-heineken.jpg",l:"Cerveza Heineken en lata de 473 ml. Sale helada. Solo para mayores de 18 años."},
+    {id:"heineken-p",t:"x",tab:"bebidas",gr:"Cervezas",n:"Heineken porrón",d:"Porrón de 330 ml.",p:2800,foto:"beb-heineken-porron.jpg",l:"Cerveza Heineken en porrón de 330 ml. Sale helada. Solo para mayores de 18 años."},
     {id:"corona",t:"x",tab:"bebidas",gr:"Cervezas",n:"Corona",d:"Porrón de 330 ml.",p:3200,foto:"beb-corona.jpg",l:"Cerveza Corona en porrón de 330 ml. Sale helada. Solo para mayores de 18 años."},
+    {id:"stella",t:"x",tab:"bebidas",gr:"Cervezas",n:"Stella Artois Pure Gold",d:"La nueva. Porrón de 330 ml.",p:3400,foto:"beb-stella.jpg",l:"La nueva Stella Artois Pure Gold: sin gluten y con menos calorías. Porrón de 330 ml. Sale helada. Solo para mayores de 18 años."},
+    {id:"patagonia",t:"x",tab:"bebidas",gr:"Cervezas",n:"Patagonia Amber Lager",d:"Lata de 473 ml.",p:3600,foto:"beb-patagonia.jpg",l:"Cerveza Patagonia Amber Lager en lata de 473 ml. Sale helada. Solo para mayores de 18 años."},
 
-    {id:"six-andes",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Andes",d:"6 latas de 473 ml.",p:12000,b:13200,trae:["6 × Andes, lata de 473 ml"],foto:"beb-six-andes.jpg",l:"Seis latas de Andes Origen rubia, heladas. Para compartir. Solo para mayores de 18 años."},
     {id:"six-heineken",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Heineken",d:"6 latas de 473 ml.",p:16500,b:18000,trae:["6 × Heineken, lata de 473 ml"],foto:"beb-six-heineken.jpg",l:"Seis latas de Heineken, heladas. Para compartir. Solo para mayores de 18 años."},
     {id:"six-corona",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Corona",d:"6 porrones de 330 ml.",p:17500,b:19200,trae:["6 × Corona, porrón de 330 ml"],foto:"beb-six-corona.jpg",l:"Seis porrones de Corona, helados. Para compartir. Solo para mayores de 18 años."},
-    {id:"previa",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"La previa",d:"Docena clásica y six pack Andes.",p:33000,b:37200,sand:12,trae:["12 × Jamón y queso","6 × Andes, lata de 473 ml"],foto:"beb-six-andes.jpg",l:"Todo para la juntada: una docena de jamón y queso y seis latas de Andes heladas. Solo para mayores de 18 años."},
+    {id:"six-stella",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Stella Pure Gold",d:"6 porrones de 330 ml.",p:18500,b:20400,trae:["6 × Stella Artois Pure Gold, porrón de 330 ml"],foto:"beb-stella.jpg",l:"Seis porrones de Stella Artois Pure Gold, helados. Solo para mayores de 18 años."},
+    {id:"six-patagonia",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Patagonia",d:"6 latas de 473 ml.",p:19500,b:21600,trae:["6 × Patagonia Amber Lager, lata de 473 ml"],foto:"beb-patagonia.jpg",l:"Seis latas de Patagonia Amber Lager, heladas. Solo para mayores de 18 años."},
+    {id:"previa",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"La previa",d:"Docena clásica y six pack Heineken.",p:37500,b:42000,sand:12,trae:["12 × Jamón y queso","6 × Heineken, lata de 473 ml"],foto:"beb-six-heineken.jpg",l:"Todo para la juntada: una docena de jamón y queso y seis latas de Heineken heladas. Solo para mayores de 18 años."},
 
     {id:"tinto",t:"x",tab:"bebidas",gr:"Vinos",n:"Vino tinto Malbec",d:"Botella de 750 ml.",p:9000,foto:"beb-vino-tinto.jpg",l:"Malbec mendocino, botella de 750 ml. Va muy bien con la picada. Solo para mayores de 18 años."},
     {id:"blanco",t:"x",tab:"bebidas",gr:"Vinos",n:"Vino blanco",d:"Botella de 750 ml, frío.",p:8500,foto:"beb-vino-blanco.jpg",l:"Vino blanco fresco y liviano, botella de 750 ml. Sale frío. Solo para mayores de 18 años."},
@@ -604,6 +607,7 @@ fieldset.campo{border:0;margin:0;padding:0}
             {id:"s19",c:"Sáb 19/12",v:"sábado 19/12",cupo:120,tom:44},
             {id:"x24",c:"Jue 24/12",v:"jueves 24/12 (Nochebuena)",cupo:240,tom:96,f:"Nochebuena"},
             {id:"x31",c:"Jue 31/12",v:"jueves 31/12 (fin de año)",cupo:240,tom:52,f:"Fin de año"}];
+  var MINIMO=24; /* pedido mínimo, en sándwiches: cuentan los sueltos y los de los combos */
   var q={}, diaSel="v27", socio=null, vista="menu", prodId="", volverY=0, ultimo="";
   var cierre=Date.now()+((24+5)*3600+17*60)*1000;
   var $=function(id){return document.getElementById(id)};
@@ -669,13 +673,12 @@ fieldset.campo{border:0;margin:0;padding:0}
     var n=x.sueltos;
     $("caja-titulo").textContent=x.hay?(x.sandwiches?"Tu pedido · "+x.sandwiches:"Tu pedido"):"Tu pedido";
     $("caja-total").textContent=x.ahorro?"Ahorrás "+plata(x.ahorro):"";
-    $("caja-avance").style.width=Math.min(100,100*n/24)+"%";
-    $("marca12").classList.toggle("si",n>=12); $("marca24").classList.toggle("si",n>=24);
-    $("caja-msj").innerHTML=!x.hay?"Tocá un producto para verlo, o el + para sumarlo.":
-      n===0?"Los combos ya vienen con descuento. Sumá sueltos y armá el tuyo.":
-      n<12?"Llevás "+n+(n===1?" suelto":" sueltos")+". Agregá <b>"+(12-n)+" más</b> y ahorrás 5%.":
-      n<24?"Tenés 5% en los sueltos. Agregá <b>"+(24-n)+" más</b> y ahorrás 10%.":
-      "Tenés <b>10% menos</b> en los sueltos.";
+    var s=x.sandwiches,falta=MINIMO-s;
+    $("caja-avance").style.width=Math.min(100,100*s/MINIMO)+"%";
+    $("marca24").classList.toggle("si",s>=MINIMO);
+    $("caja-msj").innerHTML=s===0?"El pedido mínimo es de <b>2 docenas</b>. Combos y sueltos suman por igual.":
+      falta>0?"Llevás "+s+". Te "+(falta===1?"falta <b>1</b>":"faltan <b>"+falta+"</b>")+" para el mínimo de 2 docenas.":
+      "<b>¡Llegaste al mínimo!</b>"+(x.pct?" Tenés "+x.pct+"% menos en los sueltos.":n>0&&n<12?" Con 12 sueltos ahorrás 5%.":"");
   }
 
   function refrescar(){
@@ -684,17 +687,18 @@ fieldset.campo{border:0;margin:0;padding:0}
       o.innerHTML=pasos(id,o.classList.contains("grande"));o.classList.toggle("cero",c===0)});
     document.querySelectorAll("[data-card]").forEach(function(o){o.classList.toggle("con",cant(o.dataset.card)>0)});
     pintarCaja(x);
-    var d=dia(),lugar=estado(d).q,pasa=x.sandwiches>lugar;
+    var d=dia(),lugar=estado(d).q,pasa=x.sandwiches>lugar,poco=x.sandwiches<MINIMO;
     $("barra").hidden=!x.hay;
     $("barra-cant").textContent=x.sandwiches?"Pedir "+x.sandwiches+(x.sandwiches===1?" sándwich":" sándwiches"):"Hacer el pedido";
     $("barra-total").textContent=plata(x.total);
     $("barra-nota").textContent=pasa?"Para el "+d.c+" quedan "+lugar+" lugares. Sacá "+(x.sandwiches-lugar)+" o cambiá el día.":
+      poco?"Te faltan "+(MINIMO-x.sandwiches)+" sándwiches para el mínimo de 2 docenas.":
       "Para el "+d.c+(x.ahorro?" · ahorrás "+plata(x.ahorro):"")+" · ★ "+x.puntos+" puntos";
-    $("barra-nota").classList.toggle("alerta",pasa);
-    $("ir-pedido").disabled=pasa;
+    $("barra-nota").classList.toggle("alerta",pasa||poco);
+    $("ir-pedido").disabled=pasa||poco;
     pintarClub(x);
     if(vista==="producto")pintarSubtotal();
-    if(vista==="pedido"){if(!x.hay){ver("menu")}else{pintarCarro();pintarResumen(false)}}
+    if(vista==="pedido"){if(!x.hay||poco){ver("menu")}else{pintarCarro();pintarResumen(false)}}
     try{localStorage.setItem("miga-pedido3",JSON.stringify(q))}catch(e){}
   }
 
