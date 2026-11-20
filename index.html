@@ -405,7 +405,7 @@ fieldset.campo{border:0;margin:0;padding:0}
         <div class="panel" id="panel-especiales" hidden><p class="pista">Las recetas de la casa.</p><div class="fichas" id="lista-especiales"></div></div>
         <div class="panel" id="panel-combos" hidden><p class="pista">Ya armados y con descuento.</p><div class="combos" id="lista-combos"></div></div>
         <div class="panel" id="panel-picadas" hidden><p class="pista">Quesos y fiambres en su box, listos para servir.</p><div class="combos" id="lista-picadas"></div></div>
-        <div class="panel" id="panel-bebidas" hidden><p class="pista">Bien frías.</p><div class="combos" id="lista-bebidas"></div><p class="aviso18">La cerveza se vende solo a mayores de 18 años.</p></div>
+        <div class="panel" id="panel-bebidas" hidden><p class="pista">Salen bien frías.</p><div class="combos" id="lista-bebidas"></div><p class="aviso18">Las bebidas con alcohol se venden solo a mayores de 18 años.</p></div>
       </section>
 
       <section class="club" id="sec-puntos" aria-label="Puntos">
@@ -579,9 +579,18 @@ fieldset.campo{border:0;margin:0;padding:0}
      l:"Gaseosa de litro y medio, bien fría. Elegí el sabor en las aclaraciones del pedido: cola, lima-limón o naranja."},
     {id:"agua",t:"x",tab:"bebidas",gr:"Gaseosas y aguas",n:"Agua saborizada 1,5 L",d:"Pomelo o manzana.",p:2800,foto:"extra-agua.jpg",
      l:"Agua saborizada de litro y medio, bien fría. Elegí pomelo o manzana en las aclaraciones del pedido."},
-    {id:"andes",t:"x",tab:"bebidas",gr:"Cervezas",n:"Andes",d:"Rubia, lata de 473 ml.",p:2200,foto:"extra-cerveza.jpg",l:"Cerveza Andes rubia en lata de 473 ml, bien fría. Solo para mayores de 18 años."},
-    {id:"heineken",t:"x",tab:"bebidas",gr:"Cervezas",n:"Heineken",d:"Lata de 473 ml.",p:3000,foto:"extra-cerveza.jpg",l:"Cerveza Heineken en lata de 473 ml, bien fría. Solo para mayores de 18 años."},
-    {id:"corona",t:"x",tab:"bebidas",gr:"Cervezas",n:"Corona",d:"Porrón de 330 ml.",p:3200,foto:"extra-cerveza.jpg",l:"Cerveza Corona en porrón de 330 ml, bien fría. Solo para mayores de 18 años."}
+    {id:"andes",t:"x",tab:"bebidas",gr:"Cervezas",n:"Andes",d:"Rubia, lata de 473 ml.",p:2200,foto:"beb-andes.jpg",l:"Cerveza Andes Origen rubia en lata de 473 ml. Sale helada. Solo para mayores de 18 años."},
+    {id:"heineken",t:"x",tab:"bebidas",gr:"Cervezas",n:"Heineken",d:"Lata de 473 ml.",p:3000,foto:"beb-heineken.jpg",l:"Cerveza Heineken en lata de 473 ml. Sale helada. Solo para mayores de 18 años."},
+    {id:"corona",t:"x",tab:"bebidas",gr:"Cervezas",n:"Corona",d:"Porrón de 330 ml.",p:3200,foto:"beb-corona.jpg",l:"Cerveza Corona en porrón de 330 ml. Sale helada. Solo para mayores de 18 años."},
+
+    {id:"six-andes",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Andes",d:"6 latas de 473 ml.",p:12000,b:13200,trae:["6 × Andes, lata de 473 ml"],foto:"beb-six-andes.jpg",l:"Seis latas de Andes Origen rubia, heladas. Para compartir. Solo para mayores de 18 años."},
+    {id:"six-heineken",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Heineken",d:"6 latas de 473 ml.",p:16500,b:18000,trae:["6 × Heineken, lata de 473 ml"],foto:"beb-six-heineken.jpg",l:"Seis latas de Heineken, heladas. Para compartir. Solo para mayores de 18 años."},
+    {id:"six-corona",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"Six pack Corona",d:"6 porrones de 330 ml.",p:17500,b:19200,trae:["6 × Corona, porrón de 330 ml"],foto:"beb-six-corona.jpg",l:"Seis porrones de Corona, helados. Para compartir. Solo para mayores de 18 años."},
+    {id:"previa",t:"x",tab:"bebidas",gr:"Combos de cerveza",n:"La previa",d:"Docena clásica y six pack Andes.",p:33000,b:37200,sand:12,trae:["12 × Jamón y queso","6 × Andes, lata de 473 ml"],foto:"beb-six-andes.jpg",l:"Todo para la juntada: una docena de jamón y queso y seis latas de Andes heladas. Solo para mayores de 18 años."},
+
+    {id:"tinto",t:"x",tab:"bebidas",gr:"Vinos",n:"Vino tinto Malbec",d:"Botella de 750 ml.",p:9000,foto:"beb-vino-tinto.jpg",l:"Malbec mendocino, botella de 750 ml. Va muy bien con la picada. Solo para mayores de 18 años."},
+    {id:"blanco",t:"x",tab:"bebidas",gr:"Vinos",n:"Vino blanco",d:"Botella de 750 ml, frío.",p:8500,foto:"beb-vino-blanco.jpg",l:"Vino blanco fresco y liviano, botella de 750 ml. Sale frío. Solo para mayores de 18 años."},
+    {id:"espumante",t:"x",tab:"bebidas",gr:"Vinos",n:"Espumante extra brut",d:"Botella de 750 ml, frío.",p:12000,foto:"beb-espumante.jpg",l:"Espumante extra brut, botella de 750 ml. Para brindar. Sale frío. Solo para mayores de 18 años."}
   ];
   var POR_ID={}; ITEMS.forEach(function(i){POR_ID[i.id]=i});
   var CANJES=[{n:"Media docena clásica",pts:2400},{n:"Docena clásica",pts:4500},{n:"Docena especial",pts:6000}];
@@ -602,7 +611,7 @@ fieldset.campo{border:0;margin:0;padding:0}
   function cant(id){return q[id]||0}
   function foto(i){return "img/"+(i.foto||(i.t==="g"?"foto-"+i.id+".jpg":"combo-"+i.id+".jpg"))}
   function suelto(lista){var t=0;lista.forEach(function(id){t+=POR_ID[id].p});return t}
-  function brutoDe(i){return i.t==="c"?suelto(i.it)+(i.mas||0):i.p}
+  function brutoDe(i){return i.t==="c"?suelto(i.it)+(i.mas||0):(i.b||i.p)}
   function dia(){return DIAS.filter(function(d){return d.id===diaSel})[0]}
   function estado(d){var r=Math.max(0,d.cupo-d.tom),p=r/d.cupo;
     return r===0?{k:"bajo",t:"Completo",q:0}:p<.2?{k:"bajo",t:"Últimos "+r,q:r}:p<.5?{k:"medio",t:"Quedan "+r,q:r}:{k:"ok",t:"Hay lugar",q:r}}
@@ -612,7 +621,7 @@ fieldset.campo{border:0;margin:0;padding:0}
     ITEMS.forEach(function(i){var c=cant(i.id);if(!c)return;
       if(i.t==="g"){n+=c;sb+=c*i.p}
       else if(i.t==="c"){ct+=c*i.p;ca+=c*(brutoDe(i)-i.p);cu+=c*i.it.length}
-      else et+=c*i.p});
+      else{et+=c*i.p;ca+=c*(brutoDe(i)-i.p);cu+=c*(i.sand||0)}});
     var pct=n>=24?10:n>=12?5:0, sd=Math.round(sb*pct/100), total=sb-sd+ct+et;
     return {sueltos:n,sueltosBruto:sb,pct:pct,sueltosDesc:sd,combosAhorro:ca,ahorro:ca+sd,sandwiches:n+cu,total:total,puntos:Math.floor(total/100),hay:total>0};
   }
@@ -629,7 +638,7 @@ fieldset.campo{border:0;margin:0;padding:0}
       '<span class="arte"><img src="'+foto(i)+'" alt="" loading="lazy"></span><span class="txt"><h4>'+i.n+'</h4><span class="desc">'+i.d+'</span><span class="precio">'+plata(i.p)+'</span></span></button>'+
       (i.e?'<span class="sello '+i.e+'">'+SELLO[i.e]+'</span>':'')+'<div class="pasos" data-pasos="'+i.id+'"></div></div>'}
   function fila(i){var b=brutoDe(i),pct=Math.round(100*(b-i.p)/b);
-    var tag=i.t==="c"?'<span class="tag'+(i.tag?'':' ahorro')+'">'+(i.tag||'Ahorrás '+pct+'%')+'</span>':'';
+    var tag=(i.t==="c"||b>i.p)?'<span class="tag'+(i.tag?'':' ahorro')+'">'+(i.tag||'Ahorrás '+pct+'%')+'</span>':'';
     return '<div class="combo" data-card="'+i.id+'"><button type="button" class="abre" data-prod="'+i.id+'" aria-label="Ver '+i.n+'">'+
       '<img class="combo-foto" src="'+foto(i)+'" alt="" loading="lazy"><span class="abre-txt">'+tag+'<h4>'+i.n+'</h4><p>'+i.d+'</p>'+
       '<span class="precio">'+(b>i.p?'<s>'+plata(b)+'</s>':'')+plata(i.p)+'</span></span></button><div class="pasos" data-pasos="'+i.id+'"></div></div>'}
@@ -701,6 +710,7 @@ fieldset.campo{border:0;margin:0;padding:0}
     var tr="";
     if(i.t==="c"){var vistos={};i.it.forEach(function(g){vistos[g]=(vistos[g]||0)+1});
       Object.keys(vistos).forEach(function(g){tr+="<li>"+vistos[g]+" × "+POR_ID[g].n+"</li>"});if(i.masTxt)tr+="<li>"+i.masTxt+"</li>"}
+    if(i.trae)i.trae.forEach(function(t){tr+="<li>"+t+"</li>"});
     $("prod-trae-t").hidden=!tr;$("prod-trae").hidden=!tr;$("prod-trae").innerHTML=tr;
     $("prod-nota").textContent=i.t==="g"?"Triple: tres panes de miga y dos capas de relleno. Se vende por unidad.":i.t==="c"?"Todos son triples. Si querés cambiar algún gusto, avisanos en las aclaraciones.":"";
     $("prod-nota").hidden=i.t==="x";
