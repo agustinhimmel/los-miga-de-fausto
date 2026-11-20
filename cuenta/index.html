@@ -122,13 +122,53 @@ details .dos{margin-top:8px}
   .nav button:hover{background:var(--pan);color:var(--tinta)}
   .nav button[aria-current="page"]{background:var(--rojo-suave)}
   .nav .globo{position:static;margin-left:auto}
-  #lista-pedidos{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px;align-items:start}
   #lista-pedidos > .tarjeta{margin:0;padding:22px}
   #lista-pedidos > .vacio{grid-column:1/-1}
   .chips{flex-wrap:wrap;overflow:visible;margin:0 0 18px;padding:0}
   .chips button{font-size:15px;padding:10px 18px}
   .chips button:hover{border-color:var(--tinta)}
   .boton{transition:filter .15s}.boton:hover:not(:disabled){filter:brightness(1.08)}
+}
+.ped-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ped-cab h2{font-size:26px}
+.ped-buscar{flex:1 1 220px;max-width:360px;border:1px solid var(--linea);background:var(--papel);border-radius:12px;padding:11px 12px;font:inherit;color:inherit}
+.estados{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 8px;padding:0 16px 4px}
+.estados::-webkit-scrollbar,.ped-dias::-webkit-scrollbar{display:none}
+.est-b{flex:none;border:1px solid var(--linea);background:var(--papel);border-radius:12px;padding:9px 12px;font-size:14px;font-weight:600;color:var(--tinta);cursor:pointer;white-space:nowrap}
+.est-b b{display:inline-block;min-width:22px;margin-left:4px;padding:1px 7px;border-radius:99px;background:var(--pan);font-size:12px;text-align:center}
+.est-b[aria-pressed="true"]{background:var(--tinta);color:var(--pan);border-color:var(--tinta)}
+.est-b[aria-pressed="true"] b{background:rgba(255,255,255,.18);color:inherit}
+.est-b.urgente b{background:var(--ambar);color:#fff}
+.ped-dias{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 10px;padding:0 16px 4px}
+.ped-dias button{flex:none;border:0;background:none;border-radius:999px;padding:6px 11px;font-size:13px;font-weight:600;color:var(--tinta2);cursor:pointer;white-space:nowrap}
+.ped-dias button[aria-pressed="true"]{background:var(--rojo-suave);color:var(--rojo)}
+.ped-resumen{margin:0 0 6px}
+.ped-dia{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:17px;margin:18px 0 8px}
+.ped-dia small{font:500 13px var(--texto);color:var(--tinta2)}
+.ped{background:var(--papel);border:1px solid var(--linea);border-radius:14px;margin-bottom:8px;overflow:hidden}
+.ped.abierto{border-color:var(--tinta)}
+.ped.apagado .ped-fila{opacity:.65}
+.ped-fila{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"quien plata" "n estado";gap:4px 10px;align-items:center;width:100%;border:0;background:none;padding:12px 14px;text-align:left;cursor:pointer;color:inherit}
+.ped-n{grid-area:n;font-size:12px;color:var(--tinta2);font-weight:600}
+.ped-quien{grid-area:quien;min-width:0}.ped-quien b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ped-quien small{font-size:12px;color:var(--tinta2)}
+.ped-plata{grid-area:plata;text-align:right}.ped-plata b{display:block;font-variant-numeric:tabular-nums}
+.ped-plata small{font-size:11px;font-weight:700}.ped-plata small.si{color:var(--verde)}.ped-plata small.no{color:var(--ambar)}
+.ped-fila .estado{grid-area:estado;justify-self:end}
+.ped-flecha{display:none}
+.ped-detalle{border-top:1px solid var(--linea)}
+.ped-detalle .tarjeta{border:0;border-radius:0;margin:0;background:none}
+.ped-detalle .pedido-cab{display:none}
+@media (min-width:900px){
+  .ped-cab h2{font-size:32px}
+  .estados,.ped-dias{flex-wrap:wrap;overflow:visible;margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .ped-fila{grid-template-columns:80px minmax(0,1fr) 150px 170px 20px;grid-template-areas:"n quien plata estado flecha";padding:14px 18px}
+  .ped-n{font-size:14px}
+  .ped-fila .estado{justify-self:start}
+  .ped-flecha{display:block;grid-area:flecha;color:var(--tinta2);transition:transform .15s}
+  .ped.abierto .ped-flecha{transform:rotate(180deg)}
+  .ped-fila:hover{background:var(--pan)}
+  .ped-detalle .tarjeta{padding:4px 18px 18px}
+  .ped-detalle .acciones{max-width:560px}
 }
 .vacio{text-align:center;color:var(--tinta2);padding:28px 8px}
 [hidden]{display:none!important}
@@ -180,7 +220,10 @@ details .dos{margin-top:8px}
     <p class="error" id="falla" hidden></p>
     <section id="v-inicio"></section>
     <section id="v-pedidos" hidden>
-      <div class="chips" id="filtro"></div>
+      <div class="ped-cab"><h2>Pedidos</h2><input class="ped-buscar" id="ped-buscar" type="search" placeholder="Buscar por nombre, celular o N°" aria-label="Buscar pedido"></div>
+      <div class="estados" id="ped-estados"></div>
+      <div class="ped-dias" id="ped-dias"></div>
+      <p class="chica ped-resumen" id="ped-resumen"></p>
       <div id="lista-pedidos"></div>
     </section>
     <section id="v-extra" hidden></section>
@@ -225,7 +268,7 @@ details .dos{margin-top:8px}
         return r.status===204?null:r.text().then(function(t){return t?JSON.parse(t):null})})}
 
   /* ---------- datos ---------- */
-  var pedidos=[],contenido={},productos={},dias={},vista="inicio",filtro="proximos",listo=false;
+  var pedidos=[],contenido={},productos={},dias={},vista="inicio",listo=false,fEstado="activos",fDia="todos",buscar="",abiertos={};
   var ORDEN={nuevo:0,confirmado:1,en_preparacion:2,en_camino:3,entregado:4,cancelado:5};
   function nombreEstado(p){return {nuevo:"Nuevo",confirmado:"Confirmado",en_preparacion:"En preparación",en_camino:p.entrega==="envio"?"En camino":"Listo para retirar",entregado:"Entregado",cancelado:"Cancelado"}[p.estado]}
   function siguiente(p){return {nuevo:["confirmado","Confirmar pedido"],confirmado:["en_preparacion","Empezar a preparar"],
@@ -303,14 +346,38 @@ details .dos{margin-top:8px}
       (a?'<button type="button" class="boton suave" data-estado="'+a+'" data-id="'+p.id+'">'+(p.estado==="cancelado"?"Reabrir el pedido":"Volver un paso atrás")+'</button>':"<span></span>")+
       (p.estado!=="cancelado"?'<button type="button" class="boton suave" data-estado="cancelado" data-id="'+p.id+'">Cancelar el pedido</button>':"")+'</div></details>'}
     return h+"</div></div>"}
-  function pintarPedidos(){var H=hoy(),fechas={};pedidos.forEach(function(p){if(p.fecha_entrega>=H)fechas[p.fecha_entrega]=1});
-    var op=[["proximos","Por hacer"]].concat(Object.keys(fechas).sort().map(function(f){return [f,fechaCorta(f)]}),[["todos","Todos"]]);
-    if(!op.some(function(o){return o[0]===filtro}))filtro="proximos";
-    $("filtro").innerHTML=op.map(function(o){return '<button type="button" data-filtro="'+o[0]+'" aria-pressed="'+(o[0]===filtro)+'">'+o[1]+'</button>'}).join("");
-    var l=pedidos.filter(function(p){return filtro==="todos"?true:filtro==="proximos"?(p.estado!=="entregado"&&p.estado!=="cancelado"):p.fecha_entrega===filtro});
-    l.sort(function(a,b){return filtro==="todos"?(b.fecha_entrega.localeCompare(a.fecha_entrega)||b.numero-a.numero):
-      (a.fecha_entrega.localeCompare(b.fecha_entrega)||a.numero-b.numero)}); /* sin reordenar por estado: que las tarjetas no salten al tocar */
-    $("lista-pedidos").innerHTML=l.length?l.map(tarjeta).join(""):'<p class="vacio">'+(filtro==="proximos"?"No hay pedidos por hacer. 🎉":"No hay pedidos acá.")+'</p>'}
+  /* ---------- pedidos: filtros por estado, por día y búsqueda; cada pedido se despliega ---------- */
+  var ESTADOS=[["activos","Por hacer","todo lo que falta entregar"],["nuevo","Para confirmar"],["confirmado","Confirmados"],["en_preparacion","En preparación"],
+    ["en_camino","En camino / para retirar"],["sin_cobrar","Sin cobrar"],["entregado","Entregados"],["cancelado","Cancelados"],["todos","Todos"]];
+  function pasaEstado(p,f){return f==="todos"?true:f==="activos"?(p.estado!=="entregado"&&p.estado!=="cancelado"):f==="sin_cobrar"?(!p.cobrado&&p.estado!=="cancelado"):p.estado===f}
+  function pasaDia(p,f){var H=hoy();return f==="todos"?true:f==="hoy"?p.fecha_entrega===H:f==="manana"?p.fecha_entrega===masDias(H,1):f==="semana"?(p.fecha_entrega>=H&&p.fecha_entrega<=masDias(H,6)):f==="pasados"?p.fecha_entrega<H:p.fecha_entrega===f}
+  function pasaBusca(p){if(!buscar)return true;var q=buscar.toLowerCase(),d=q.replace(/\D/g,"");
+    return p.nombre.toLowerCase().indexOf(q)>=0||(d&&(String(p.telefono).replace(/\D/g,"").indexOf(d)>=0||String(p.numero)===d))}
+  function filaPedido(p){var ab=!!abiertos[p.id],t=p.sandwiches+" sándw.";
+    return '<div class="ped'+(ab?" abierto":"")+(p.estado==="entregado"||p.estado==="cancelado"?" apagado":"")+'"><button type="button" class="ped-fila" data-abrir="'+p.id+'" aria-expanded="'+ab+'">'+
+      '<span class="ped-n">N° '+p.numero+'</span><span class="ped-quien"><b>'+esc(p.nombre)+'</b><small>'+fechaCorta(p.fecha_entrega)+" · "+(p.entrega==="envio"?"Envío":"Retira")+" · "+t+'</small></span>'+
+      '<span class="ped-plata"><b>'+plata(p.total)+'</b><small class="'+(p.cobrado?"si":"no")+'">'+(p.cobrado?"✓ cobrado":"sin cobrar")+'</small></span>'+
+      '<span class="estado e-'+p.estado+'">'+nombreEstado(p)+'</span><span class="ped-flecha" aria-hidden="true">▾</span></button>'+(ab?'<div class="ped-detalle">'+tarjeta(p)+'</div>':"")+'</div>'}
+  function pintarPedidos(){var H=hoy();
+    /* estados con su cantidad (respetando el día elegido) */
+    $("ped-estados").innerHTML=ESTADOS.map(function(e){var n=pedidos.filter(function(p){return pasaEstado(p,e[0])&&pasaDia(p,fDia)}).length;
+      return '<button type="button" class="est-b'+(e[0]==="nuevo"&&n?" urgente":"")+'" data-fest="'+e[0]+'" aria-pressed="'+(fEstado===e[0])+'"'+(e[2]?' title="'+e[2]+'"':"")+'>'+e[1]+' <b>'+n+'</b></button>'}).join("");
+    /* días: los próximos con pedidos, más atajos */
+    var prox={};pedidos.forEach(function(p){if(p.fecha_entrega>=H&&pasaEstado(p,fEstado))prox[p.fecha_entrega]=(prox[p.fecha_entrega]||0)+1});
+    var op=[["todos","Todas las fechas"],["hoy","Hoy"],["manana","Mañana"],["semana","Próximos 7 días"]].concat(Object.keys(prox).sort().slice(0,8).map(function(f){return [f,fechaCorta(f)+" ("+prox[f]+")"]}),[["pasados","Ya pasados"]]);
+    if(!op.some(function(o){return o[0]===fDia}))op.push([fDia,fechaCorta(fDia)]);
+    $("ped-dias").innerHTML=op.map(function(o){return '<button type="button" data-fdia="'+o[0]+'" aria-pressed="'+(fDia===o[0])+'">'+o[1]+'</button>'}).join("");
+    var l=pedidos.filter(function(p){return pasaEstado(p,fEstado)&&pasaDia(p,fDia)&&pasaBusca(p)});
+    var terminados=fEstado==="entregado"||fEstado==="cancelado"||fEstado==="todos"||fDia==="pasados";
+    l.sort(function(a,b){return terminados?(b.fecha_entrega.localeCompare(a.fecha_entrega)||b.numero-a.numero):(a.fecha_entrega.localeCompare(b.fecha_entrega)||a.numero-b.numero)});
+    var tot=0,san=0;l.forEach(function(p){tot+=p.total;san+=p.sandwiches});
+    $("ped-resumen").textContent=l.length?l.length+(l.length===1?" pedido":" pedidos")+" · "+san+" sándwiches · "+plata(tot):"";
+    if(!l.length){$("lista-pedidos").innerHTML='<p class="vacio">'+(buscar?"No hay pedidos que coincidan con la búsqueda.":fEstado==="nuevo"?"No hay pedidos para confirmar. 🎉":fEstado==="activos"?"No hay nada pendiente. 🎉":"No hay pedidos acá.")+'</p>';return}
+    /* agrupados por día de entrega */
+    var h="",dia="";l.forEach(function(p){if(p.fecha_entrega!==dia){dia=p.fecha_entrega;var del=l.filter(function(x){return x.fecha_entrega===dia}),s2=0;del.forEach(function(x){s2+=x.sandwiches});
+      h+='<h3 class="ped-dia">'+(dia===H?"Hoy · ":dia===masDias(H,1)?"Mañana · ":"")+fechaCorta(dia)+((dias[dia]||{}).etiqueta&&dias[dia].etiqueta!=="SIMULADO"?" · "+esc(dias[dia].etiqueta):"")+'<small>'+del.length+(del.length===1?" pedido":" pedidos")+" · "+s2+' sándwiches</small></h3>'}
+      h+=filaPedido(p)});
+    $("lista-pedidos").innerHTML=h}
 
   function pintar(){if(!listo)return;
     var n=pedidos.filter(function(p){return p.estado==="nuevo"}).length;$("globo").hidden=!n;$("globo").textContent=n;
@@ -431,12 +498,16 @@ details .dos{margin-top:8px}
   function afuera2(){$("entrada").hidden=false;$("adentro").hidden=true;$("nav").hidden=true;$("salir").hidden=true;$("espera-mail").hidden=true;$("titulo").textContent="Los Miga de Fausto"}
   $("salir").addEventListener("click",afuera);
   document.addEventListener("click",function(e){
-    var ir=e.target.closest("[data-ir]"),d=e.target.closest("[data-dia]"),f=e.target.closest("[data-filtro]"),es=e.target.closest("[data-estado]");
-    if(ir){vista=ir.dataset.ir;pintar();window.scrollTo(0,0);return}
-    if(d){vista="pedidos";filtro=d.dataset.dia;pintar();window.scrollTo(0,0);return}
-    if(f){filtro=f.dataset.filtro;pintar();return}
+    var ir=e.target.closest("[data-ir]"),d=e.target.closest("[data-dia]"),es=e.target.closest("[data-estado]");
+    if(ir){vista=ir.dataset.ir;if(ir.closest(".kpi.alerta")){fEstado="nuevo";fDia="todos"}pintar();window.scrollTo(0,0);return}
+    if(d){vista="pedidos";fEstado="activos";fDia=d.dataset.dia;pintar();window.scrollTo(0,0);return}
+    var fe=e.target.closest("[data-fest]"),fd=e.target.closest("[data-fdia]"),ab=e.target.closest("[data-abrir]");
+    if(fe){fEstado=fe.dataset.fest;pintar();return}
+    if(fd){fDia=fd.dataset.fdia;pintar();return}
+    if(ab){var id=ab.dataset.abrir;if(abiertos[id])delete abiertos[id];else abiertos[id]=1;pintar();return}
     if(es){if(es.dataset.estado==="cancelado"&&!confirm("¿Cancelar este pedido? Se liberan sus lugares."))return;
-      cambiar(es.dataset.id,{estado:es.dataset.estado,cambio:new Date().toISOString()})}});
+      abiertos[es.dataset.id]=1;cambiar(es.dataset.id,{estado:es.dataset.estado,cambio:new Date().toISOString()})}});
+  $("ped-buscar").addEventListener("input",function(){buscar=this.value.trim();pintar()});
   document.addEventListener("change",function(e){var c=e.target.closest("[data-cobro]");if(c)cambiar(c.dataset.cobro,{cobrado:c.checked})});
   setInterval(function(){if(S&&listo&&!document.hidden)traer()},30000);
   document.addEventListener("visibilitychange",function(){if(S&&listo&&!document.hidden)traer()});
