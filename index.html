@@ -365,7 +365,7 @@ fieldset.campo{border:0;margin:0;padding:0}
         <div class="panel" id="panel-especiales" hidden><p class="pista">Recetas de la casa. Un toque suma uno.</p><div class="fichas" id="fichas-e"></div></div>
         <div class="panel" id="panel-combos" hidden><p class="pista">Ya armados y con descuento.</p><div class="combos" id="combos"></div></div>
         <div class="panel" id="panel-eventos" hidden><p class="pista">Para las fechas que vienen. Elegís el día y el combo.</p><div class="combos" id="eventos"></div></div>
-        <div class="panel" id="panel-extras" hidden><p class="pista">Bebidas frías y picada.</p><div class="lista" id="extras"></div><p class="aviso18">La cerveza se vende solo a mayores de 18 años.</p></div>
+        <div class="panel" id="panel-extras" hidden><p class="pista">Bebidas frías y picada.</p><div class="lista" id="extras"></div><p class="aviso18">La cerveza se vende solo a mayores de 18 años. Los fiambres y quesos de la picada pueden variar según disponibilidad.</p></div>
       </section>
 
       <section class="club" id="sec-puntos" aria-label="Puntos">
@@ -507,14 +507,17 @@ fieldset.campo{border:0;margin:0;padding:0}
   var COMBO_ID={}; COMBOS.forEach(function(c){COMBO_ID[c.id]=c});
   function brutoC(c){return bruto(c.it)+(c.mas||0)}
   var EXTRAS=[
-    {g:"Bebidas"},
+    {g:"Gaseosas y aguas"},
     {id:"gas",n:"Gaseosa 1,5 L",d:"Cola, lima-limón o naranja.",p:3500},
     {id:"agua",n:"Agua saborizada 1,5 L",d:"Pomelo o manzana.",p:2800},
-    {id:"lata",n:"Cerveza lata 473 ml",d:"Rubia, bien fría.",p:2500},
-    {id:"litro",n:"Cerveza de litro",d:"Rubia, con envase.",p:5000},
-    {g:"Picada"},
-    {id:"pic2",n:"Picada para 2",d:"Quesos, fiambres, aceitunas y pan.",p:12000},
-    {id:"pic4",n:"Picada para 4",d:"Más variedad de quesos y fiambres.",p:20000}
+    {g:"Cervezas"},
+    {id:"andes",n:"Andes",d:"Rubia, lata de 473 ml.",p:2200},
+    {id:"heineken",n:"Heineken",d:"Lata de 473 ml.",p:3000},
+    {id:"corona",n:"Corona",d:"Porrón de 330 ml.",p:3200},
+    {g:"Picadas"},
+    {id:"pic2",n:"Picada box para 2",d:"Queso pategrás y azul, jamón cocido y crudo, bondiola, lomo ahumado, longaniza, mortadela, cantimpalo y salame criollo.",p:16000},
+    {id:"pic4",n:"Picada box para 4",d:"Los mismos quesos y fiambres, para cuatro.",p:20000},
+    {id:"pic6",n:"Picada box para 6",d:"Los mismos quesos y fiambres, para seis.",p:25000}
   ];
   var CANJES=[{n:"Media docena clásica",pts:2400},{n:"Docena clásica",pts:4500},{n:"Docena especial",pts:6000}];
   var DIAS=[{id:"v27",c:"Vie 27/11",v:"viernes 27/11",cupo:120,tom:64},
