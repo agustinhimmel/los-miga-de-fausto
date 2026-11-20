@@ -43,6 +43,11 @@ h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
 .boton:disabled{opacity:.55}
 .boton.suave{background:var(--pan);color:var(--tinta);border:1px solid var(--linea)}
 .boton.wa{background:var(--wa);color:#fff}
+.con-ver{position:relative}
+.con-ver input{padding-right:64px}
+.con-ver .ver{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;padding:8px 10px;font-size:13px;font-weight:700;color:var(--tinta2);cursor:pointer}
+.enlace{display:block;width:100%;background:none;border:0;padding:12px 0 4px;font-size:14px;color:var(--tinta2);text-decoration:underline;cursor:pointer}
+.aviso-ok{background:var(--verde-suave);color:var(--verde);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;margin:0 0 10px}
 .error{color:var(--rojo);font-size:14px;font-weight:600;margin:0 0 10px}
 .numeros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .numeros div{background:var(--pan);border-radius:12px;padding:10px}
@@ -105,12 +110,20 @@ details .dos{margin-top:8px}
 
   <form class="tarjeta" id="entrada" hidden novalidate>
     <h2 id="entrada-t">Entrar</h2>
-    <div class="campo" id="campo-nombre" hidden><label for="nombre">Tu nombre</label><input id="nombre" autocomplete="name"></div>
-    <div class="campo"><label for="mail">Mail</label><input id="mail" type="email" autocomplete="username" inputmode="email"></div>
-    <div class="campo"><label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password"></div>
+    <p class="chica" id="entrada-sub" style="margin-bottom:12px" hidden></p>
+    <div class="campo" id="campo-nombre" hidden><label for="nombre">Tu nombre y apellido</label><input id="nombre" autocomplete="name"></div>
+    <div class="campo" id="campo-cel" hidden><label for="cel">Tu celular</label><input id="cel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej: 11 5555 5555"></div>
+    <div class="campo" id="campo-mail"><label for="mail">Mail</label><input id="mail" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false"></div>
+    <div class="campo" id="campo-clave"><label for="clave" id="clave-l">Contraseña</label>
+      <div class="con-ver"><input id="clave" type="password" autocomplete="current-password"><button type="button" class="ver" data-verclave="clave">Ver</button></div>
+      <small class="chica" id="clave-ayuda" hidden>8 o más, entre letras y números.</small></div>
+    <div class="campo" id="campo-clave2" hidden><label for="clave2">Repetí la contraseña</label>
+      <div class="con-ver"><input id="clave2" type="password" autocomplete="new-password"><button type="button" class="ver" data-verclave="clave2">Ver</button></div></div>
     <p class="error" id="entrada-error" hidden></p>
-    <p class="chica" id="entrada-ok" style="margin-bottom:10px" hidden></p>
+    <p class="aviso-ok" id="entrada-ok" hidden></p>
     <button class="boton" type="submit" id="entrada-b">Entrar</button>
+    <button class="boton suave" type="button" id="reenviar" style="margin-top:8px" hidden>Mandarme de nuevo el mail de confirmación</button>
+    <button class="enlace" type="button" id="olvide">Olvidé mi contraseña</button>
     <button class="boton suave" type="button" id="modo" style="margin-top:8px">Es mi primera vez: crear mi cuenta</button>
   </form>
 
@@ -159,7 +172,7 @@ details .dos{margin-top:8px}
     try{if(S)localStorage.setItem("miga-panel",JSON.stringify(S));else localStorage.removeItem("miga-panel")}catch(e){}}
   function ficha(tipo,cuerpo){
     return fetch(BASE.url+"/auth/v1/token?grant_type="+tipo,{method:"POST",headers:{apikey:BASE.clave,"Content-Type":"application/json"},body:JSON.stringify(cuerpo)})
-      .then(function(r){return r.json().then(function(j){if(!r.ok){var e=new Error("no");e.estado=r.status;throw e}guardar(j);return j})})}
+      .then(function(r){return r.json().then(function(j){if(!r.ok){var e=new Error("no");e.estado=r.status;e.codigo=j.error_code||j.error||"";throw e}guardar(j);return j})})}
   var renovando=null;
   function renovar(){if(!renovando)renovando=ficha("refresh_token",{refresh_token:S.r}).then(function(x){renovando=null;return x},function(e){renovando=null;if(e.estado)afuera();throw e});return renovando}
   function llamar(camino,opt){opt=opt||{};
@@ -296,29 +309,63 @@ details .dos{margin-top:8px}
       if(!ok){$("sin-permiso").hidden=false;return}
       $("adentro").hidden=false;$("nav").hidden=false;traer()})
     .catch(function(){if(S){$("adentro").hidden=false;$("falla").hidden=false;$("falla").textContent="No pudimos conectar. Revisá la conexión y recargá."}})}
-  var creando=false;
-  function modo(c){creando=c;$("entrada-t").textContent=c?"Crear mi cuenta":"Entrar";$("campo-nombre").hidden=!c;$("entrada-b").textContent=c?"Crear mi cuenta":"Entrar";
-    $("modo").textContent=c?"Ya tengo cuenta: entrar":"Es mi primera vez: crear mi cuenta";$("clave").autocomplete=c?"new-password":"current-password";$("entrada-error").hidden=true}
-  $("modo").addEventListener("click",function(){$("entrada-ok").hidden=true;modo(!creando)});
-  $("entrada").addEventListener("submit",function(e){e.preventDefault();var b=$("entrada-b"),m=$("mail").value.trim(),c=$("clave").value,falta="";
-    var mal=function(t){b.disabled=false;$("entrada-error").hidden=false;$("entrada-error").textContent=t};
-    $("entrada-error").hidden=true;$("entrada-ok").hidden=true;
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m))falta="Revisá el mail.";
-    else if(creando&&!$("nombre").value.trim())falta="Falta tu nombre.";
-    else if(creando&&c.length<8)falta="La contraseña tiene que tener 8 letras o números como mínimo.";
-    else if(!c)falta="Falta la contraseña.";
+  /* modos: entrar, crear, olvide (pedir el mail para cambiarla) y nueva (elegir contraseña nueva, viniendo del mail) */
+  var modoActual="entrar",AQUI=location.origin+location.pathname;
+  var MODOS={entrar:["Entrar","","Entrar"],crear:["Crear mi cuenta","Te va a llegar un mail para confirmarla.","Crear mi cuenta"],
+    olvide:["Recuperar mi contraseña","Poné tu mail y te mandamos un enlace para elegir una contraseña nueva.","Mandarme el enlace"],
+    nueva:["Elegí tu contraseña nueva","","Guardar la contraseña"]};
+  function modo(m){modoActual=m;var x=MODOS[m],crea=m==="crear",nueva=m==="nueva";
+    $("entrada-t").textContent=x[0];$("entrada-sub").textContent=x[1];$("entrada-sub").hidden=!x[1];$("entrada-b").textContent=x[2];
+    $("campo-nombre").hidden=!crea;$("campo-cel").hidden=!crea;$("campo-mail").hidden=nueva;
+    $("campo-clave").hidden=m==="olvide";$("campo-clave2").hidden=!(crea||nueva);$("clave-ayuda").hidden=!(crea||nueva);
+    $("clave-l").textContent=nueva?"Contraseña nueva":"Contraseña";$("clave").autocomplete=crea||nueva?"new-password":"current-password";
+    $("olvide").hidden=m!=="entrar";$("modo").hidden=nueva;$("reenviar").hidden=true;
+    $("modo").textContent=m==="entrar"?"Es mi primera vez: crear mi cuenta":"Ya tengo cuenta: entrar";
+    $("entrada-error").hidden=true;$("clave").value="";$("clave2").value="";
+    ["clave","clave2"].forEach(function(i){$(i).type="password"});document.querySelectorAll("[data-verclave]").forEach(function(b){b.textContent="Ver"})}
+  function mal(t){$("entrada-b").disabled=false;$("entrada-ok").hidden=true;$("entrada-error").hidden=false;$("entrada-error").textContent=t}
+  function bien(t){$("entrada-b").disabled=false;$("entrada-error").hidden=true;$("entrada-ok").hidden=false;$("entrada-ok").textContent=t}
+  function cuenta(camino,cuerpo,conSesion,metodo){
+    var h={apikey:BASE.clave,"Content-Type":"application/json"};if(conSesion)h.Authorization="Bearer "+S.a;
+    return fetch(BASE.url+"/auth/v1/"+camino,{method:metodo||"POST",headers:h,body:JSON.stringify(cuerpo)})
+      .then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok){var e=new Error("no");e.estado=r.status;e.codigo=j.error_code||j.code||"";throw e}return j})})}
+  function porque(e,otro){return !e.estado?"No pudimos conectar. Revisá tu conexión.":e.estado===429||e.codigo==="over_email_send_rate_limit"?"Se hicieron muchos intentos seguidos. Esperá unos minutos y probá de nuevo.":otro}
+  $("modo").addEventListener("click",function(){$("entrada-ok").hidden=true;modo(modoActual==="entrar"?"crear":"entrar")});
+  $("olvide").addEventListener("click",function(){$("entrada-ok").hidden=true;modo("olvide")});
+  document.querySelectorAll("[data-verclave]").forEach(function(b){b.addEventListener("click",function(){var i=$(b.dataset.verclave),ver=i.type==="password";i.type=ver?"text":"password";b.textContent=ver?"Ocultar":"Ver"})});
+  $("reenviar").addEventListener("click",function(){var b=this,m=$("mail").value.trim();b.disabled=true;
+    cuenta("resend?redirect_to="+encodeURIComponent(AQUI),{type:"signup",email:m}).then(function(){b.disabled=false;bien("Listo, te lo mandamos de nuevo a "+m+". Fijate también en spam.")},
+      function(e){b.disabled=false;mal(porque(e,"No pudimos mandarlo. Probá de nuevo en un rato."))})});
+  $("entrada").addEventListener("submit",function(e){e.preventDefault();
+    var m=$("mail").value.trim().toLowerCase(),c=$("clave").value,c2=$("clave2").value,n=$("nombre").value.trim(),t=$("cel").value.trim(),falta="";
+    var mailMal=!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m),claveMal=c.length<8?"La contraseña tiene que tener 8 o más letras o números.":!/[a-zA-Z]/.test(c)||!/\d/.test(c)?"La contraseña tiene que tener letras y números.":c!==c2?"Las dos contraseñas no coinciden. Escribilas de nuevo.":"";
+    if(modoActual==="crear")falta=n.length<3?"Falta tu nombre y apellido.":t.replace(/\D/g,"").length<8?"Falta tu celular, con característica.":mailMal?"Revisá el mail: tiene que ser como nombre@gmail.com.":claveMal;
+    else if(modoActual==="entrar")falta=mailMal?"Revisá el mail.":!c?"Falta la contraseña.":"";
+    else if(modoActual==="olvide")falta=mailMal?"Revisá el mail.":"";
+    else falta=claveMal;
     if(falta){mal(falta);return}
-    b.disabled=true;
-    if(!creando){ficha("password",{email:m,password:c}).then(function(){b.disabled=false;$("clave").value="";adentro()},
-      function(er){mal(er.estado?"El mail o la contraseña no coinciden.":"No pudimos conectar. Revisá la conexión.")});return}
-    fetch(BASE.url+"/auth/v1/signup",{method:"POST",headers:{apikey:BASE.clave,"Content-Type":"application/json"},
-      body:JSON.stringify({email:m,password:c,data:{nombre:$("nombre").value.trim().slice(0,60)}})})
-      .then(function(r){return r.json().then(function(j){
-        if(!r.ok){mal(r.status===429?"Se hicieron muchos intentos. Esperá un rato y probá de nuevo.":r.status===422||r.status===400?"Ese mail ya tiene cuenta, o la contraseña es muy fácil. Probá entrar o cambiá la contraseña.":"No se pudo crear la cuenta.");return}
-        b.disabled=false;$("clave").value="";modo(false);
-        if(j.access_token){guardar(j);adentro()}
-        else{$("entrada-ok").hidden=false;$("entrada-ok").textContent="Cuenta creada. Te mandamos un mail para confirmarla: abrilo y después entrá acá."}})})
-      .catch(function(){mal("No pudimos conectar. Revisá la conexión.")})});
+    $("entrada-error").hidden=true;$("entrada-ok").hidden=true;$("reenviar").hidden=true;$("entrada-b").disabled=true;
+    if(modoActual==="entrar"){ficha("password",{email:m,password:c}).then(function(){$("entrada-b").disabled=false;$("clave").value="";adentro()},function(er){
+      if(er.codigo==="email_not_confirmed"){mal("Todavía no confirmaste tu mail. Abrí el mail que te mandamos y tocá el enlace.");$("reenviar").hidden=false}
+      else mal(porque(er,"El mail o la contraseña no coinciden."))});return}
+    if(modoActual==="crear"){cuenta("signup?redirect_to="+encodeURIComponent(AQUI),{email:m,password:c,data:{nombre:n.slice(0,80),celular:t.slice(0,30)}}).then(function(j){
+        if(j.access_token){guardar(j);$("entrada-b").disabled=false;adentro();return}
+        if(j.identities&&j.identities.length===0){modo("entrar");mal("Ese mail ya tiene una cuenta. Entrá con tu contraseña o tocá \"Olvidé mi contraseña\".");return}
+        modo("entrar");$("mail").value=m;bien("¡Cuenta creada! Te mandamos un mail a "+m+" para confirmarla. Abrilo y tocá el enlace (fijate en spam si no lo ves).");$("reenviar").hidden=false},
+      function(er){mal(porque(er,er.codigo==="weak_password"?"Esa contraseña es muy fácil de adivinar. Probá con otra.":"No se pudo crear la cuenta. Probá de nuevo."))});return}
+    if(modoActual==="olvide"){cuenta("recover?redirect_to="+encodeURIComponent(AQUI),{email:m}).then(function(){modo("entrar");$("mail").value=m;
+        bien("Si ese mail tiene una cuenta, ya te mandamos el enlace para elegir una contraseña nueva. Fijate también en spam.")},
+      function(er){mal(porque(er,"No pudimos mandar el enlace. Probá de nuevo en un rato."))});return}
+    cuenta("user",{password:c},true,"PUT").then(function(){modo("entrar");$("entrada-b").disabled=false;adentro()},
+      function(er){mal(porque(er,er.codigo==="same_password"?"Esa es la contraseña que ya tenías. Elegí otra.":er.estado===401||er.estado===403?"El enlace venció. Pedí uno nuevo con \"Olvidé mi contraseña\".":"No se pudo guardar. Probá de nuevo."))})});
+  /* al volver desde el enlace de un mail (confirmar la cuenta o cambiar la contraseña) */
+  function desdeMail(){var h=new URLSearchParams(location.hash.replace(/^#/,""));if(!h.get("access_token")&&!h.get("error"))return false;
+    history.replaceState(null,"",AQUI);
+    if(h.get("error")){afuera();mal("Ese enlace venció o ya se usó. Si era para cambiar la contraseña, pedí otro con \"Olvidé mi contraseña\".");return true}
+    guardar({access_token:h.get("access_token"),refresh_token:h.get("refresh_token"),expires_in:+h.get("expires_in")||3600});
+    if(h.get("type")==="recovery"){afuera2();modo("nueva")}else adentro();
+    return true}
+  function afuera2(){$("entrada").hidden=false;$("adentro").hidden=true;$("nav").hidden=true;$("salir").hidden=true;$("sin-permiso").hidden=true}
   $("salir").addEventListener("click",afuera);
   document.addEventListener("click",function(e){
     var ir=e.target.closest("[data-ir]"),d=e.target.closest("[data-dia]"),f=e.target.closest("[data-filtro]"),es=e.target.closest("[data-estado]");
@@ -330,7 +377,7 @@ details .dos{margin-top:8px}
   document.addEventListener("change",function(e){var c=e.target.closest("[data-cobro]");if(c)cambiar(c.dataset.cobro,{cobrado:c.checked})});
   setInterval(function(){if(S&&listo&&!document.hidden)traer()},30000);
   document.addEventListener("visibilitychange",function(){if(S&&listo&&!document.hidden)traer()});
-  if(S&&S.a)adentro();else afuera();
+  if(!desdeMail()){if(S&&S.a)adentro();else afuera()}
 })();
 </script>
 </body>
