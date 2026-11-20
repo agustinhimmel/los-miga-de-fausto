@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Panel · Los Miga de Fausto</title>
+<title>Mi cuenta · Los Miga de Fausto</title>
 <meta name="theme-color" content="#d5202c">
 <link rel="icon" type="image/png" href="../img/fausto.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,6 +31,7 @@ h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
 .cab{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .cab img{width:40px;height:40px;border-radius:50%}
 .cab h1{font-size:20px;flex:1}
+.cab .a-tienda{font-size:13px;color:var(--tinta2);font-weight:600;white-space:nowrap}
 .cab button{background:none;border:1px solid var(--linea);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--tinta2);cursor:pointer}
 .tarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:16px;padding:16px;margin-bottom:12px}
 .tarjeta h2{font-size:18px;margin-bottom:10px}
@@ -114,7 +115,7 @@ details .dos{margin-top:8px}
   .marco{max-width:1280px;padding:28px 40px 60px}
   body:has(.nav:not([hidden])) .marco{margin-left:228px;max-width:none}
   .cab h1{font-size:26px}
-  #entrada,#sin-permiso,#espera-mail{max-width:460px;margin:48px auto;padding:28px}
+  #entrada,#espera-mail{max-width:460px;margin:48px auto;padding:28px}
   .nav{top:0;bottom:0;right:auto;width:228px;border-top:0;border-right:1px solid var(--linea);padding:28px 14px;justify-content:flex-start;align-items:flex-start}
   .nav div{flex-direction:column;gap:4px}
   .nav button{flex:none;display:flex;align-items:center;justify-content:flex-start;gap:14px;font-size:15px;padding:13px 14px;border-radius:12px;width:100%}
@@ -139,7 +140,8 @@ details .dos{margin-top:8px}
 <div class="marco">
   <header class="cab">
     <img src="../img/fausto.png" alt="">
-    <h1>Panel de la miga</h1>
+    <h1 id="titulo">Los Miga de Fausto</h1>
+    <a class="a-tienda" href="../">Ir a la tienda</a>
     <button type="button" id="salir" hidden>Salir</button>
   </header>
 
@@ -173,12 +175,7 @@ details .dos{margin-top:8px}
     <button class="boton suave" type="button" id="modo" style="margin-top:8px">Es mi primera vez: crear mi cuenta</button>
   </form>
 
-  <div class="tarjeta" id="espera-mail" hidden><h2>Un segundo…</h2><p class="chica">Estamos confirmando tu enlace.</p></div>
-
-  <div class="tarjeta" id="sin-permiso" hidden>
-    <h2>Tu cuenta ya está creada</h2>
-    <p class="chica">Falta que Agustín la habilite. Avisale, y cuando te diga que está, volvé a entrar.</p>
-  </div>
+  <div class="tarjeta" id="espera-mail" hidden><h2>Un segundo…</h2><p class="chica">Estamos entrando a tu cuenta.</p></div>
 
   <main id="adentro" hidden>
     <div class="gps" id="gps" hidden></div>
@@ -351,12 +348,12 @@ details .dos{margin-top:8px}
 
   /* ---------- entrar y salir ---------- */
   function afuera(){guardar(null);listo=false;if(reloj!==null){navigator.geolocation.clearWatch(reloj);reloj=null}
-    $("entrada").hidden=false;$("adentro").hidden=true;$("nav").hidden=true;$("salir").hidden=true;$("sin-permiso").hidden=true}
-  function adentro(){$("entrada").hidden=true;$("salir").hidden=false;
+    $("entrada").hidden=false;$("adentro").hidden=true;$("nav").hidden=true;$("salir").hidden=true;$("espera-mail").hidden=true;$("titulo").textContent="Los Miga de Fausto"}
+  function adentro(){$("entrada").hidden=true;$("espera-mail").hidden=false;
     llamar("rpc/es_dueno",{cuerpo:{}}).then(function(ok){if(!S)return;
-      if(!ok){$("sin-permiso").hidden=false;return}
-      $("adentro").hidden=false;$("nav").hidden=false;traer()})
-    .catch(function(){if(S){$("adentro").hidden=false;$("falla").hidden=false;$("falla").textContent="No pudimos conectar. Revisá la conexión y recargá."}})}
+      if(!ok){location.replace("../?hola=1");return} /* cuenta de cliente: va derecho a la tienda, con la sesión iniciada */
+      $("titulo").textContent="Panel de la miga";$("salir").hidden=false;$("adentro").hidden=false;$("nav").hidden=false;$("espera-mail").hidden=true;traer()})
+    .catch(function(){$("espera-mail").hidden=true;if(S){$("salir").hidden=false;$("adentro").hidden=false;$("falla").hidden=false;$("falla").textContent="No pudimos conectar. Revisá la conexión y recargá."}})}
   /* modos: entrar, crear, olvide (pedir el mail para cambiarla) y nueva (elegir contraseña nueva, viniendo del mail) */
   var modoActual="entrar",AQUI=location.origin+location.pathname;
   var MODOS={entrar:["Entrar","","Entrar"],crear:["Crear mi cuenta","Te va a llegar un mail para confirmarla.","Crear mi cuenta"],
@@ -434,7 +431,7 @@ details .dos{margin-top:8px}
     guardar({access_token:h.get("access_token"),refresh_token:h.get("refresh_token"),expires_in:+h.get("expires_in")||3600});
     if(h.get("type")==="recovery"){afuera2();modo("nueva")}else adentro();
     return true}
-  function afuera2(){$("entrada").hidden=false;$("adentro").hidden=true;$("nav").hidden=true;$("salir").hidden=true;$("sin-permiso").hidden=true}
+  function afuera2(){$("entrada").hidden=false;$("adentro").hidden=true;$("nav").hidden=true;$("salir").hidden=true;$("espera-mail").hidden=true;$("titulo").textContent="Los Miga de Fausto"}
   $("salir").addEventListener("click",afuera);
   document.addEventListener("click",function(e){
     var ir=e.target.closest("[data-ir]"),d=e.target.closest("[data-dia]"),f=e.target.closest("[data-filtro]"),es=e.target.closest("[data-estado]");

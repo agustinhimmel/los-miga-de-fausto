@@ -70,6 +70,9 @@ body,.tienda,.ficha,.como,.dia,.fila,.combo{transition:background-color .35s,bor
 .hero h1 em{font-style:normal;color:var(--rojo)}
 .hero p{margin:12px 0 0;color:var(--tinta2);font-size:15px}
 .hero-cta{display:none}
+.bienvenida{margin:12px 16px 0;padding:12px 14px;border-radius:14px;background:var(--verde);color:#fff;font-weight:700;font-size:15px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bienvenida{color:#10231c}}
+:root[data-theme="dark"] .bienvenida{color:#10231c}
 .portada{display:block;width:calc(100% - 32px);margin:0 16px;border-radius:22px;aspect-ratio:16/10;object-fit:cover}
 
 .como{margin:16px 16px 0;padding:14px 12px;border-radius:18px;background:var(--pan);border:1px solid var(--linea)}
@@ -375,6 +378,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
   .cuenta-btn{font-size:14px;padding:9px 16px;background:var(--papel)}
   .cuenta-btn:hover{border-color:var(--tinta)}
 
+  .bienvenida{margin:18px 0 0;font-size:17px;padding:14px 18px}
   /* portada: nombre a la izquierda, foto a la derecha */
   #vista-menu > .hero{grid-column:1;padding:40px 0 48px}
   #vista-menu > .portada{grid-column:2;width:100%;margin:0;aspect-ratio:5/4;border-radius:32px;box-shadow:var(--sombra)}
@@ -487,6 +491,8 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
           <span class="perilla"></span>
         </button>
       </div>
+
+      <p class="bienvenida" id="bienvenida" hidden></p>
 
       <header class="hero">
         <div class="logo">
@@ -634,6 +640,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
         <ul class="premios" id="premios"></ul>
         <h3>Tus pedidos</h3>
         <p class="chica">Todavía no hiciste pedidos. Cuando hagas el primero, lo vas a ver acá y lo vas a poder repetir.</p>
+        <a class="secundario" id="ir-panel" href="panel/" hidden style="display:block;text-align:center;text-decoration:none;color:inherit">Ir al panel del negocio</a>
         <button class="secundario" type="button" id="salir">Cerrar sesión</button>
       </div>
     </div>
@@ -902,7 +909,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
   function pintarCuenta(){
     $("registro").hidden=!!socio; $("socio").hidden=!socio; if(!socio)return;
     $("socio-hola").textContent="Hola, "+socio.nombre;
-    $("socio-mail").textContent=socio.mail+(socio.ofertas?" · recibís ofertas por mail":" · no recibís ofertas");
+    $("socio-mail").textContent=socio.real?socio.mail:socio.mail+(socio.ofertas?" · recibís ofertas por mail":" · no recibís ofertas");
     $("socio-puntos").textContent=socio.puntos.toLocaleString("es-AR");
     var pr=proximo(socio.puntos);
     $("socio-falta").textContent=pr?"Te faltan "+(pr.pts-socio.puntos).toLocaleString("es-AR")+" para una "+pr.n.toLowerCase()+".":"Ya podés cambiar cualquier combo.";
@@ -942,7 +949,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
   /* ---- arranque ---- */
   try{var g0=JSON.parse(localStorage.getItem("miga-pedido3")||"null");
     if(g0)ITEMS.forEach(function(i){var c=Math.floor(g0[i.id]);if(c>0)q[i.id]=Math.min(96,c)})}catch(e){}
-  try{var s0=JSON.parse(localStorage.getItem("miga-socio")||"null");if(s0&&s0.nombre)socio={nombre:String(s0.nombre).slice(0,40),mail:String(s0.mail||"").slice(0,80),cel:String(s0.cel||"").slice(0,20),ofertas:!!s0.ofertas,puntos:Math.max(0,Math.floor(s0.puntos)||0)}}catch(e){}
+  if(!BASE)try{var s0=JSON.parse(localStorage.getItem("miga-socio")||"null");if(s0&&s0.nombre)socio={nombre:String(s0.nombre).slice(0,40),mail:String(s0.mail||"").slice(0,80),cel:String(s0.cel||"").slice(0,20),ofertas:!!s0.ofertas,puntos:Math.max(0,Math.floor(s0.puntos)||0)}}catch(e){}
   pintarDias(); pintarCatalogo(); refrescar();
   setInterval(reloj,1000);
   cargar();
@@ -971,7 +978,24 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     var fila=b.parentNode;fila.scrollLeft=b.offsetLeft-(fila.clientWidth-b.offsetWidth)/2;
     var arriba=$("sec-pedido").getBoundingClientRect().top+(window.scrollY||0);if((window.scrollY||0)>arriba)window.scrollTo(0,arriba)})});
   $("ir-pedido").addEventListener("click",function(){ver("pedido");pintarCarro();pintarResumen(true)});
-  function abrirCuenta(){pintarCuenta();ver("cuenta")}
+  function abrirCuenta(){if(BASE&&!socio){location.href="cuenta/";return}pintarCuenta();ver("cuenta")}
+  /* ---- la cuenta de verdad: la misma sesión que se inicia en /cuenta/ ---- */
+  var SES=null;
+  function leerSesion(){try{SES=JSON.parse(localStorage.getItem("miga-panel")||"null")}catch(e){SES=null}return SES&&SES.a?SES:null}
+  function sesionViva(){if(!leerSesion())return Promise.resolve(null);
+    if(SES.v-Date.now()>60000)return Promise.resolve(SES);
+    return fetch(BASE.url+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:BASE.clave,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:SES.r})})
+      .then(function(r){return r.json().then(function(j){if(!r.ok){if(r.status<500)try{localStorage.removeItem("miga-panel")}catch(e){}return null}
+        SES={a:j.access_token,r:j.refresh_token,v:Date.now()+(j.expires_in||3600)*1000,m:j.user&&j.user.email};try{localStorage.setItem("miga-panel",JSON.stringify(SES))}catch(e){}return SES})}).catch(function(){return null})}
+  function cargarSocio(){if(!BASE)return;var llega=/[?&]hola=1/.test(location.search);if(llega)history.replaceState(null,"",location.pathname);
+    sesionViva().then(function(s){if(!s){socio=null;pintarCuenta();refrescar();return}
+      var h={apikey:BASE.clave,Authorization:"Bearer "+s.a,"Content-Type":"application/json"};
+      return fetch(BASE.url+"/auth/v1/user",{headers:h}).then(function(r){return r.ok?r.json():null}).then(function(u){if(!u)return;
+        var d=u.user_metadata||{};socio={nombre:String(d.nombre||"").slice(0,40)||"vos",apellido:String(d.apellido||"").slice(0,40),mail:String(u.email||""),cel:String(d.celular||"").slice(0,30),real:true,puntos:200};
+        pintarCuenta();refrescar();
+        if(llega){$("bienvenida").hidden=false;$("bienvenida").textContent="¡Listo, "+socio.nombre+"! Tu cuenta ya está activa. Armá tu pedido cuando quieras."}
+        fetch(BASE.url+"/rest/v1/rpc/es_dueno",{method:"POST",headers:h,body:"{}"}).then(function(r){return r.ok?r.json():false}).then(function(ok){$("ir-panel").hidden=!ok}).catch(function(){})})}).catch(function(){})}
+  cargarSocio();
   $("abrir-cuenta").addEventListener("click",abrirCuenta);
   $("club-btn").addEventListener("click",abrirCuenta);
   $("registro").addEventListener("submit",function(e){e.preventDefault();var n=$("reg-nombre").value.trim(),m=$("reg-mail").value.trim(),c=$("reg-cel").value.trim(),falta="";
@@ -979,7 +1003,10 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     $("reg-error").hidden=!falta;$("reg-error").textContent=falta;if(falta)return;
     socio={nombre:n.slice(0,40),mail:m.slice(0,80),cel:c.slice(0,20),ofertas:$("reg-ofertas").checked,puntos:200};try{localStorage.setItem("miga-socio",JSON.stringify(socio))}catch(x){}
     pintarCuenta();refrescar()});
-  $("salir").addEventListener("click",function(){socio=null;try{localStorage.removeItem("miga-socio")}catch(x){} pintarCuenta();refrescar()});
+  $("salir").addEventListener("click",function(){
+    if(BASE&&SES){try{fetch(BASE.url+"/auth/v1/logout",{method:"POST",headers:{apikey:BASE.clave,Authorization:"Bearer "+SES.a}}).catch(function(){})}catch(x){}
+      try{localStorage.removeItem("miga-panel")}catch(x){} SES=null;$("ir-panel").hidden=true}
+    socio=null;try{localStorage.removeItem("miga-socio")}catch(x){} pintarCuenta();refrescar();if(BASE)ver("menu")});
   document.querySelectorAll('input[name="entrega"]').forEach(function(r){r.addEventListener("change",function(){$("campo-dir").hidden=marcado("entrega")!=="Envío"})});
   $("copiar").addEventListener("click",function(){var b=this,t=listaTexto();
     var ok=function(){b.textContent="Lista copiada";setTimeout(function(){b.textContent="Copiar la lista para mandar al grupo"},1800)};
