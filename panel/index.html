@@ -43,6 +43,7 @@ h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
 .boton:disabled{opacity:.55}
 .boton.suave{background:var(--pan);color:var(--tinta);border:1px solid var(--linea)}
 .boton.wa{background:var(--wa);color:#fff}
+.dos-campos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .con-ver{position:relative}
 .con-ver input{padding-right:64px}
 .con-ver .ver{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;padding:8px 10px;font-size:13px;font-weight:700;color:var(--tinta2);cursor:pointer}
@@ -111,7 +112,9 @@ details .dos{margin-top:8px}
   <form class="tarjeta" id="entrada" hidden novalidate>
     <h2 id="entrada-t">Entrar</h2>
     <p class="chica" id="entrada-sub" style="margin-bottom:12px" hidden></p>
-    <div class="campo" id="campo-nombre" hidden><label for="nombre">Tu nombre y apellido</label><input id="nombre" autocomplete="name"></div>
+    <div class="dos-campos" id="campo-nombre" hidden>
+      <div class="campo"><label for="nombre">Nombre</label><input id="nombre" autocomplete="given-name" autocapitalize="words"></div>
+      <div class="campo"><label for="apellido">Apellido</label><input id="apellido" autocomplete="family-name" autocapitalize="words"></div></div>
     <div class="campo" id="campo-cel" hidden><label for="cel">Tu celular</label><input id="cel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej: 11 5555 5555"></div>
     <div class="campo" id="campo-mail"><label for="mail">Mail</label><input id="mail" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false"></div>
     <div class="campo" id="campo-clave"><label for="clave" id="clave-l">Contraseña</label>
@@ -337,9 +340,9 @@ details .dos{margin-top:8px}
     cuenta("resend?redirect_to="+encodeURIComponent(AQUI),{type:"signup",email:m}).then(function(){b.disabled=false;bien("Listo, te lo mandamos de nuevo a "+m+". Fijate también en spam.")},
       function(e){b.disabled=false;mal(porque(e,"No pudimos mandarlo. Probá de nuevo en un rato."))})});
   $("entrada").addEventListener("submit",function(e){e.preventDefault();
-    var m=$("mail").value.trim().toLowerCase(),c=$("clave").value,c2=$("clave2").value,n=$("nombre").value.trim(),t=$("cel").value.trim(),falta="";
+    var m=$("mail").value.trim().toLowerCase(),c=$("clave").value,c2=$("clave2").value,n=$("nombre").value.trim(),ap=$("apellido").value.trim(),t=$("cel").value.trim(),falta="";
     var mailMal=!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m),claveMal=c.length<8?"La contraseña tiene que tener 8 o más letras o números.":!/[a-zA-Z]/.test(c)||!/\d/.test(c)?"La contraseña tiene que tener letras y números.":c!==c2?"Las dos contraseñas no coinciden. Escribilas de nuevo.":"";
-    if(modoActual==="crear")falta=n.length<3?"Falta tu nombre y apellido.":t.replace(/\D/g,"").length<8?"Falta tu celular, con característica.":mailMal?"Revisá el mail: tiene que ser como nombre@gmail.com.":claveMal;
+    if(modoActual==="crear")falta=n.length<2?"Falta tu nombre.":ap.length<2?"Falta tu apellido.":t.replace(/\D/g,"").length<8?"Falta tu celular, con característica.":mailMal?"Revisá el mail: tiene que ser como nombre@gmail.com.":claveMal;
     else if(modoActual==="entrar")falta=mailMal?"Revisá el mail.":!c?"Falta la contraseña.":"";
     else if(modoActual==="olvide")falta=mailMal?"Revisá el mail.":"";
     else falta=claveMal;
@@ -348,7 +351,7 @@ details .dos{margin-top:8px}
     if(modoActual==="entrar"){ficha("password",{email:m,password:c}).then(function(){$("entrada-b").disabled=false;$("clave").value="";adentro()},function(er){
       if(er.codigo==="email_not_confirmed"){mal("Todavía no confirmaste tu mail. Abrí el mail que te mandamos y tocá el enlace.");$("reenviar").hidden=false}
       else mal(porque(er,"El mail o la contraseña no coinciden."))});return}
-    if(modoActual==="crear"){cuenta("signup?redirect_to="+encodeURIComponent(AQUI),{email:m,password:c,data:{nombre:n.slice(0,80),celular:t.slice(0,30)}}).then(function(j){
+    if(modoActual==="crear"){cuenta("signup?redirect_to="+encodeURIComponent(AQUI),{email:m,password:c,data:{nombre:n.slice(0,50),apellido:ap.slice(0,50),celular:t.slice(0,30)}}).then(function(j){
         if(j.access_token){guardar(j);$("entrada-b").disabled=false;adentro();return}
         if(j.identities&&j.identities.length===0){modo("entrar");mal("Ese mail ya tiene una cuenta. Entrá con tu contraseña o tocá \"Olvidé mi contraseña\".");return}
         modo("entrar");$("mail").value=m;bien("¡Cuenta creada! Te mandamos un mail a "+m+" para confirmarla. Abrilo y tocá el enlace (fijate en spam si no lo ves).");$("reenviar").hidden=false},
