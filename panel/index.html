@@ -32,6 +32,9 @@ h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
 .cab img{width:40px;height:40px;border-radius:50%}
 .cab h1{font-size:20px;flex:1}
 .cab .a-ajustes{background:none;border:1px solid var(--linea);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--tinta);font-weight:600;cursor:pointer;white-space:nowrap}
+.cab .a-ajustes.definir{border-color:var(--ambar);color:var(--ambar)}
+.cab .a-ajustes.definir.listo{border-color:var(--linea);color:var(--tinta2)}
+@media (max-width:520px){.cab .a-tienda,.cab .txt{display:none}.cab h1{font-size:17px}.cab{gap:6px}.cab .a-ajustes,.cab button{padding:6px 9px}}
 .comp{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--ambar-suave);color:var(--ambar);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:14px;font-weight:600}
 .comp.ok{background:var(--verde-suave);color:var(--verde)}
 .comp .boton{width:auto;padding:8px 14px;font-size:13px}
@@ -185,7 +188,8 @@ details .dos{margin-top:8px}
     <img src="../img/fausto.png" alt="">
     <h1 id="titulo">Los Miga de Fausto</h1>
     <a class="a-tienda" href="../">Ir a la tienda</a>
-    <button type="button" class="a-ajustes" data-ir="ajustes" id="b-ajustes" hidden>⚙ Ajustes</button>
+    <button type="button" class="a-ajustes definir" data-ir="definir" id="b-definir" hidden>📝<span class="txt"> Para definir</span></button>
+    <button type="button" class="a-ajustes" data-ir="ajustes" id="b-ajustes" hidden aria-label="Ajustes">⚙<span class="txt"> Ajustes</span></button>
     <button type="button" id="salir" hidden>Salir</button>
   </header>
 
@@ -432,7 +436,7 @@ details .dos{margin-top:8px}
   function adentro(){$("entrada").hidden=true;$("espera-mail").hidden=false;
     llamar("rpc/es_dueno",{cuerpo:{}}).then(function(ok){if(!S)return;
       if(!ok){location.replace("../?hola=1");return} /* cuenta de cliente: va derecho a la tienda, con la sesión iniciada */
-      $("titulo").textContent="Panel de la miga";$("salir").hidden=false;$("b-ajustes").hidden=false;$("adentro").hidden=false;$("nav").hidden=false;$("espera-mail").hidden=true;traer()})
+      $("titulo").textContent="Panel de la miga";$("salir").hidden=false;$("b-ajustes").hidden=false;$("b-definir").hidden=false;$("adentro").hidden=false;$("nav").hidden=false;$("espera-mail").hidden=true;traer()})
     .catch(function(){$("espera-mail").hidden=true;if(S){$("salir").hidden=false;$("adentro").hidden=false;$("falla").hidden=false;$("falla").textContent="No pudimos conectar. Revisá la conexión y recargá."}})}
   /* modos: entrar, crear, olvide (pedir el mail para cambiarla) y nueva (elegir contraseña nueva, viniendo del mail) */
   var modoActual="entrar",AQUI=location.origin+location.pathname;
@@ -602,6 +606,23 @@ details .dos{margin-top:8px}
 .switch input:checked + i{background:var(--verde)}
 .switch input:checked + i::after{transform:translateX(18px)}
 .subtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.def-grupo{font-size:17px;margin:22px 0 8px}
+.def{margin-bottom:10px}
+.def.ok{border-color:var(--verde)}
+.def-p{margin:0 0 6px;font-size:15px;line-height:1.4}
+.def-a{margin:0 0 8px}
+.def-ayuda{margin:0 0 10px}
+.def-ayuda summary{cursor:pointer;font-weight:700;color:var(--rojo);font-size:14px;padding:4px 0}
+.def-ayuda pre{white-space:pre-wrap;font:13px/1.5 var(--texto);background:var(--pan);border-radius:12px;padding:12px;margin:8px 0 0;max-height:420px;overflow:auto}
+.def textarea,.coment-f textarea{resize:vertical;min-height:44px}
+.def-pie{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+.def-pie small{color:var(--verde);font-weight:600;font-size:12px}
+.def-pie .boton{width:auto;padding:9px 18px;font-size:14px}
+.coments{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+.coments li{background:var(--pan);border-radius:12px;padding:10px 12px}
+.coments p{margin:0 0 4px;font-size:14px}
+.coments small{color:var(--tinta2);font-size:12px}
+@media (min-width:900px){#v-extra .def{max-width:860px}}
 .promo-activa{background:var(--rojo-suave);color:var(--rojo);border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 8px}
 .g-nota{font-size:12px;color:var(--tinta2);margin:8px 0 0}
 .ayuda summary{cursor:pointer;font-size:15px}
@@ -734,7 +755,7 @@ details .dos{margin-top:8px}
 <script>
 (function(){
   var M=window.MIGA,$=M.$,esc=M.esc,plata=M.plata;
-  var ins=[],porId={},formula={},receta={},compras=[],prods=[];
+  var ins=[],porId={},formula={},receta={},compras=[],prods=[],consultas=[],comentarios=[];
   var est={prod:null,tab:"insumos",periodo:30,demo:false,form:null,insumo:null,medida:"v",rk:"general",rkPor:"v"},forzar=true;
   var CAT={clasicos:"Clásicos",especiales:"Especiales",combos:"Combos",picadas:"Picadas",bebidas:"Bebidas"},CATS=["clasicos","especiales","combos","picadas","bebidas"];
   var DSEM=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
@@ -744,9 +765,33 @@ details .dos{margin-top:8px}
   function porUnidad(i){var c=costoUnit(i);if(c==null)return "—";return i.unidad==="un"?plata(c)+" c/u":plata(c*1000)+(i.unidad==="g"?" el kg":" el litro")}
 
   M.cargar=function(){return Promise.all([M.llamar("insumos?select=*&order=nombre"),M.llamar("insumo_formula?select=*"),M.llamar("producto_receta?select=*"),
-      M.llamar("compras?select=*&order=fecha.desc,id.desc&limit=80"),M.llamar("producciones?select=*&order=fecha.desc,id.desc&limit=80")]).then(function(r){
+      M.llamar("compras?select=*&order=fecha.desc,id.desc&limit=80"),M.llamar("producciones?select=*&order=fecha.desc,id.desc&limit=80"),
+      M.llamar("consultas?select=*&order=orden"),M.llamar("comentarios?select=*&order=creado.desc&limit=200")]).then(function(r){
+    consultas=r[5]||[];comentarios=r[6]||[];marcarPendientes();
     ins=r[0];porId={};ins.forEach(function(i){porId[i.id]=i});formula={};r[1].forEach(function(f){(formula[f.preparacion_id]=formula[f.preparacion_id]||[]).push(f)});
     receta={};r[2].forEach(function(x){(receta[x.producto_id]=receta[x.producto_id]||[]).push(x)});compras=r[3];prods=r[4]})};
+
+  /* ---------- "Para definir": preguntas que contesta el dueño, y comentarios ---------- */
+  function marcarPendientes(){var b=$("b-definir");if(!b)return;var n=consultas.filter(function(c){return !c.respuesta}).length;
+    b.innerHTML='📝<span class="txt"> Para definir</span>'+(n?" ("+n+")":"");b.classList.toggle("listo",!n)}
+  function quien(){var s=null;try{s=JSON.parse(localStorage.getItem("miga-panel")||"null")}catch(e){}return s&&s.m||null}
+  function cuando(iso){return new Date(iso).toLocaleString("es-AR",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"})}
+  function cajaComentarios(prod){var l=comentarios.filter(function(c){return prod?c.producto_id===prod:!c.producto_id});
+    return '<form class="g-form coment-f" data-coment="'+esc(prod||"")+'" style="grid-template-columns:minmax(0,1fr)"><div class="campo"><label>'+(prod?"Comentario o idea sobre este producto":"Escribí lo que quieras: dudas, ideas, cosas para cambiar")+'</label><textarea class="g-in" name="texto" rows="3" maxlength="4000"></textarea></div><div class="g-acc"><button class="boton" type="submit">Guardar comentario</button></div></form>'+
+      (l.length?'<ul class="coments">'+l.map(function(c){return '<li><p>'+esc(c.texto).replace(/\n/g,"<br>")+'</p><small>'+esc(c.quien||"")+" · "+cuando(c.creado)+' <button type="button" class="mini rojo" data-borracoment="'+c.id+'">Borrar</button></small></li>'}).join("")+'</ul>':"")}
+  M.vistas.definir=function(el){var n=consultas.filter(function(c){return !c.respuesta}).length,ver=est.defVer||"pend";
+    var h='<div class="g-titulo"><div><h2>📝 Para definir</h2><p class="chica">Contestá con tus palabras, como si fuera un mensaje. Se guarda solo cuando tocás "Guardar", y Agustín lo ve.</p></div>'+
+      '<div class="seg"><button type="button" data-defver="pend" aria-pressed="'+(ver==="pend")+'">Sin contestar ('+n+')</button><button type="button" data-defver="todas" aria-pressed="'+(ver==="todas")+'">Todas</button></div></div>';
+    if(!consultas.length)h+='<div class="tarjeta"><p class="chica">No hay preguntas por ahora.</p></div>';
+    else if(!n&&ver==="pend")h+='<div class="tarjeta"><h2>¡Contestaste todo! 🎉</h2><p class="chica">Gracias. Si te acordás de algo más, dejalo abajo en comentarios.</p></div>';
+    var grupo="";consultas.forEach(function(c){if(ver==="pend"&&c.respuesta)return;
+      if(c.grupo!==grupo){grupo=c.grupo;h+='<h3 class="def-grupo">'+esc(grupo)+'</h3>'}
+      h+='<div class="tarjeta def'+(c.respuesta?" ok":"")+'"><p class="def-p"><b>'+c.orden+'.</b> '+esc(c.pregunta)+'</p>'+
+        (c.ayuda?(c.ayuda.length>300?'<details class="def-ayuda"><summary>Ver ideas y números</summary><pre>'+esc(c.ayuda)+'</pre></details>':'<p class="chica def-a">'+esc(c.ayuda)+'</p>'):"")+
+        '<form data-consulta="'+c.id+'"><textarea class="g-in" name="r" rows="'+(c.ayuda&&c.ayuda.length>300?5:2)+'" placeholder="Tu respuesta…">'+esc(c.respuesta||"")+'</textarea>'+
+        '<div class="def-pie"><small>'+(c.respondida?"✓ Contestada "+cuando(c.respondida):"")+'</small><button class="boton" type="submit">Guardar</button></div></form></div>'});
+    h+='<h3 class="def-grupo">💬 Comentarios y sugerencias</h3><div class="tarjeta">'+cajaComentarios(null)+'</div>';
+    el.innerHTML=h};
 
   /* ---------- cuentas ---------- */
   function costoUnit(i,prof){if(!i)return null;prof=prof||0;
@@ -819,6 +864,8 @@ details .dos{margin-top:8px}
     var serie=[];for(var d=13;d>=0;d--){var f=M.masDias(H,-d),l=enRango(vivos,f,f);serie.push({f:f,v:l.reduce(function(a,p){return a+p.total},0),n:l.length})}
     h+='<div class="g-grid tres"><div class="tarjeta"><h2>Ventas de los últimos 14 días</h2>'+(serie.some(function(s){return s.v})?grafDias(serie):'<p class="chica">Todavía no entraron pedidos. Cuando entren, vas a ver acá cómo viene la venta día por día.</p>')+'</div>';
     /* alertas */
+    var sinC=consultas.filter(function(c){return !c.respuesta}).length;
+    if(sinC)h=h.replace('<div class="kpis">','<button type="button" class="aviso" data-ir="definir" style="margin-bottom:14px"><b>'+sinC+'</b><span>'+(sinC===1?"pregunta para definir":"preguntas para definir")+' antes de salir. Tocá para contestar.</span></button><div class="kpis">');
     var al=[],bajos=ins.filter(function(i){return !i.es_preparacion&&i.activo&&+i.stock_minimo>0&&+i.stock<+i.stock_minimo});
     bajos.slice(0,5).forEach(function(i){al.push('<li><span class="pill mal">Stock bajo</span><span>'+esc(i.nombre)+": quedan "+cant(i.stock,i.unidad)+'</span></li>')});
     productos().filter(function(p){return p.activo&&p.tipo!=="extra"}).forEach(function(p){var m=margen(p);
@@ -901,6 +948,7 @@ details .dos{margin-top:8px}
         '<p class="chica">Si lo comprás hecho, agregá abajo a qué precio lo pagás (cargalo primero como insumo en Stock) y el sistema te muestra cuánto te deja.</p>')+'</div>';
       h2+='<div class="tarjeta ancho"><h2>'+(esGusto?"Receta: qué lleva una armada":"De qué está hecho")+'</h2>'+((receta[p.id]||[]).length?"":'<p class="chica" style="margin-bottom:8px">Todavía no tiene ingredientes cargados.</p>')+ed.html+
         '<p class="g-nota">Cambiá una cantidad y salí del casillero: se guarda sola y el costo se recalcula.</p></div>'}
+    h2+='<div class="tarjeta ancho"><h2>💬 Comentarios</h2>'+cajaComentarios(p.id)+'</div>';
     el.innerHTML=h2+'</div>'};
 
   /* =================== STOCK =================== */
@@ -1109,6 +1157,8 @@ details .dos{margin-top:8px}
     if((x=t.closest("[data-rk]"))){est.rk=x.dataset.rk;pintar();return}
     if((x=t.closest("[data-rkpor]"))){est.rkPor=x.dataset.rkpor;pintar();return}
     if((x=t.closest("[data-copiarcal]"))){try{navigator.clipboard.writeText(x.dataset.copiarcal).then(function(){x.textContent="¡Copiado!"})}catch(er){}return}
+    if((x=t.closest("[data-defver]"))){est.defVer=x.dataset.defver;pintar();return}
+    if((x=t.closest("[data-borracoment]"))){if(!confirm("¿Borrar este comentario?"))return;M.llamar("comentarios?id=eq."+x.dataset.borracoment,{metodo:"DELETE"}).then(recargar,fallo);return}
     if((x=t.closest("[data-sinpromo]"))){M.llamar("productos?id=eq."+encodeURIComponent(x.dataset.sinpromo),{metodo:"PATCH",cuerpo:{promo_pct:null,promo_hasta:null,promo_texto:null}}).then(recargar,fallo);return}
     if((x=t.closest("[data-sugerido]"))){$("g-precio").value=x.dataset.sugerido;$("g-precio").focus();return}
     if((x=t.closest("[data-quitar]"))){if(!confirm("¿Quitar este ingrediente?"))return;
@@ -1132,6 +1182,10 @@ details .dos{margin-top:8px}
     if(f.dataset.ajuste==="pago"){var cbu=String(d.get("cbu")||"").replace(/\D/g,"");if(cbu&&cbu.length!==22){alert("El CBU o CVU tiene que tener 22 números.");return}if(b)b.disabled=true;
       Promise.all([["pago_alias",String(d.get("alias")||"").trim()],["pago_cbu",cbu],["pago_titular",String(d.get("titular")||"").trim()],["pago_banco",String(d.get("banco")||"").trim()]].map(function(x){
         return M.llamar("ajustes?clave=eq."+x[0],{metodo:"PATCH",cuerpo:{valor:x[1]}})})).then(function(){aj.__ok=0;forzar=true;M.pintar()},mal);return}
+    if(f.dataset.consulta){var rt=String(d.get("r")||"").trim();if(b){b.disabled=true;b.textContent="Guardando…"}
+      M.llamar("consultas?id=eq."+f.dataset.consulta,{metodo:"PATCH",cuerpo:{respuesta:rt||null,respondida:rt?new Date().toISOString():null,quien:quien()}}).then(recargar,mal);return}
+    if(f.hasAttribute("data-coment")){var tx=String(d.get("texto")||"").trim();if(!tx){alert("Escribí algo antes de guardar.");return}if(b)b.disabled=true;
+      M.llamar("comentarios",{cuerpo:{texto:tx,producto_id:f.dataset.coment||null,quien:quien()}}).then(recargar,mal);return}
     if(f.dataset.promo){var pc=Math.round(numSimple(d.get("pct")));if(!(pc>=1&&pc<=90)){alert("Poné un descuento entre 1 y 90 %.");return}if(b)b.disabled=true;
       M.llamar("productos?id=eq."+encodeURIComponent(f.dataset.promo),{metodo:"PATCH",cuerpo:{promo_pct:pc,promo_hasta:d.get("hasta")||null,promo_texto:String(d.get("texto")||"").trim()||null,actualizado:new Date().toISOString()}}).then(recargar,mal);return}
     if(f.dataset.precio){var p=Math.round(num(d.get("precio")));if(!(p>0)){alert("Poné un precio válido.");return}if(b)b.disabled=true;
