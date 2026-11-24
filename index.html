@@ -163,6 +163,10 @@ body,.tienda,.ficha,.como,.dia,.fila,.combo{transition:background-color .35s,bor
 .ficha .desc{font-size:12px;color:var(--tinta2);line-height:1.3}
 .ficha .precio{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;margin-top:4px}
 .sello{position:absolute;top:9px;left:9px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:5px 10px;box-shadow:0 3px 8px -2px rgba(0,0,0,.35);transform:rotate(-3deg);transform-origin:left center}
+.sello.promo{background:var(--rojo);color:#fff}
+.combo .tag.promo{background:var(--rojo);color:#fff}
+.tab-promo{color:var(--rojo)!important}
+.ficha .precio s{color:var(--tinta2);font-weight:500;font-size:.85em;margin-right:4px}
 .sello.top{background:var(--mostaza);color:#2a2205}
 .sello.veggie{background:#1f6b4f;color:#fff}
 .sello.esp{background:#2b1416;color:#f2c230}
@@ -576,6 +580,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
             
           </div>
           <div class="tabs" role="tablist" aria-label="Qué querés pedir">
+            <button type="button" role="tab" data-tab="promos" aria-selected="false" hidden class="tab-promo">🔥 Promos</button>
             <button type="button" role="tab" data-tab="clasicos" aria-selected="true">Clásicos</button>
             <button type="button" role="tab" data-tab="especiales" aria-selected="false">Especiales</button>
             <button type="button" role="tab" data-tab="combos" aria-selected="false">Combos</button>
@@ -583,6 +588,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
             <button type="button" role="tab" data-tab="bebidas" aria-selected="false">Bebidas</button>
           </div>
         </div>
+        <div class="panel" id="panel-promos" hidden><p class="pista">Descuentos por tiempo limitado.</p><div id="lista-promos"></div></div>
         <div class="panel" id="panel-clasicos"><p class="pista">Tocá uno para verlo. El + lo suma al pedido.</p><div class="fichas" id="lista-clasicos"></div></div>
         <div class="panel" id="panel-especiales" hidden><p class="pista">Las recetas de la casa.</p><div class="fichas" id="lista-especiales"></div></div>
         <div class="panel" id="panel-combos" hidden><p class="pista">Ya armados y con descuento.</p><div class="combos" id="lista-combos"></div></div>
@@ -738,20 +744,20 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
   var PICADA="Lista para servir, en su box. Trae queso pategrás, queso azul, jamón cocido, jamón crudo, bondiola, lomo ahumado, longaniza, mortadela, cantimpalo y salame criollo. Los fiambres y quesos pueden variar según disponibilidad. Pedila con anticipación.";
   /* t: g = gusto suelto, c = combo, x = extra. "mas" es el valor suelto de lo que un combo trae además de sándwiches. */
   var ITEMS=[
-    {id:"jq",t:"g",tab:"clasicos",n:"Jamón y queso",d:"El de siempre.",p:3000,e:"top",
-     l:"El clásico que no falta en ninguna mesa. Jamón cocido y queso, con un toque suave de mayonesa."},
-    {id:"jqt",t:"g",tab:"clasicos",n:"Jamón, queso y tomate",d:"Con tomate fresco.",p:3300,
-     l:"Jamón cocido, queso y rodajas de tomate fresco. El más fresco de los clásicos."},
-    {id:"jqh",t:"g",tab:"clasicos",n:"Jamón, queso y huevo",d:"Con huevo pisado.",p:3300,
-     l:"Jamón cocido, queso y huevo pisado con un toque de queso crema. Bien cremoso."},
-    {id:"po",t:"g",tab:"especiales",n:"Pollo",d:"Con queso crema y verdeo.",p:3800,e:"esp",
-     l:"Pollo cocido y desmenuzado, con queso crema y verdeo, más una feta de queso. Suave y cremoso."},
-    {id:"be",t:"g",tab:"especiales",n:"Berenjena en escabeche",d:"Berenjenas caseras y queso.",p:3800,e:"veggie",
-     l:"Berenjenas en escabeche hechas en casa, con ajo y orégano, y una feta de queso. Sin carne."},
+    {id:"jq",t:"g",tab:"clasicos",n:"Jamón y queso",d:"Jamón cocido y queso Tybo.",p:3000,e:"top",
+     l:"El clásico que no falta en ninguna mesa. Jamón cocido y queso Tybo, con un toque suave de mayonesa."},
+    {id:"jqt",t:"g",tab:"clasicos",n:"Jamón, queso y tomate",d:"Con rodajas de tomate fresco.",p:3300,
+     l:"Jamón cocido, queso Tybo y rodajas de tomate fresco. El más fresco de los clásicos."},
+    {id:"jqh",t:"g",tab:"clasicos",n:"Jamón, queso y huevo",d:"Con huevo rallado.",p:3300,
+     l:"Jamón cocido, queso Tybo y huevo rallado con un toque de queso crema. Bien cremoso."},
+    {id:"po",t:"g",tab:"especiales",n:"Pollo",d:"Con queso crema, tomate y verdeo.",p:3800,e:"esp",
+     l:"Pollo cocido y desmenuzado, con queso crema, tomate y verdeo, y queso Tybo. Suave y cremoso."},
+    {id:"be",t:"g",tab:"especiales",n:"Berenjenas al escabeche",d:"Hechas en casa, con queso Tybo.",p:3800,e:"veggie",
+     l:"Berenjenas al escabeche hechas en casa, con ajo, laurel y orégano, más queso Tybo."},
     {id:"te",t:"g",tab:"especiales",n:"Ternera",d:"Cocida a fuego lento.",p:4300,e:"esp",
      l:"Ternera cocida a fuego lento con verduras y feteada fina, con queso y tomate."},
-    {id:"vt",t:"g",tab:"especiales",n:"Vitel toné",d:"Con salsa de atún y anchoas.",p:5000,e:"esp",
-     l:"Como en las fiestas, pero todo el año: carne tierna con salsa de atún y anchoas, y una feta de queso."},
+    {id:"vt",t:"g",tab:"especiales",n:"Vitel toné",d:"Peceto con salsa de atún y anchoas.",p:5000,e:"esp",
+     l:"Como en las fiestas, pero todo el año: carne de peceto tierna con salsa de atún y anchoas, con fetas de queso Tybo."},
 
     {id:"c12",t:"c",tab:"combos",n:"Docena clásica",d:"12 de jamón y queso.",p:32000,it:rep("jq",12),tag:"El más pedido",
      l:"La docena de siempre: doce triples de jamón y queso en su bandeja. Para una juntada de cuatro a seis personas."},
@@ -765,8 +771,14 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
      l:"Seis triples de jamón y queso. Para dos o tres."},
     {id:"cfinal",t:"c",tab:"combos",ev:1,n:"Combo final",d:"Docena clásica y 2 gaseosas de 1,5 L.",p:38000,it:rep("jq",12),mas:7000,masTxt:"2 × Gaseosa 1,5 L",tag:"Finales · 28/11 y 12/12",
      l:"Para ver el partido sin moverse del sillón: una docena de jamón y queso y dos gaseosas de litro y medio."},
-    {id:"cmesa",t:"c",tab:"combos",ev:1,n:"Mesa de fiestas",d:"Una docena surtida y una especial.",p:78000,it:SURT.concat(ESP),tag:"Nochebuena y fin de año",
-     l:"La mesa resuelta para las fiestas: una docena surtida de clásicos y una docena especial."},
+    {id:"cmesa",t:"c",tab:"combos",ev:1,n:"Mega combo fiestas",d:"2 docenas de vitel toné y 1 de pollo.",p:139000,it:rep("vt",24).concat(rep("po",12)),tag:"🎄 Navidad y fin de año",foto:"foto-vt.jpg",
+     l:"La mesa de las fiestas resuelta: dos docenas de vitel toné, el clásico de Navidad, y una docena de pollo. 36 triples para compartir."},
+    {id:"c24vt",t:"c",tab:"combos",ev:1,n:"Dos docenas de vitel toné",d:"24 de vitel toné.",p:102000,it:rep("vt",24),tag:"🎄 Fiestas",foto:"foto-vt.jpg",
+     l:"Veinticuatro triples de vitel toné: carne de peceto tierna con salsa de atún y anchoas y queso Tybo. Para la mesa grande."},
+    {id:"c12vt",t:"c",tab:"combos",ev:1,n:"Docena de vitel toné",d:"12 de vitel toné.",p:53000,it:rep("vt",12),tag:"🎄 Fiestas",foto:"foto-vt.jpg",
+     l:"Doce triples de vitel toné, como en las fiestas pero todo el año."},
+    {id:"c12po",t:"c",tab:"combos",ev:1,n:"Docena de pollo",d:"12 de pollo.",p:40000,it:rep("po",12),tag:"🎄 Fiestas",foto:"foto-po.jpg",
+     l:"Doce triples de pollo con queso crema, tomate, verdeo y queso Tybo. Suaves y cremosos."},
     {id:"c48",t:"c",tab:"combos",ev:1,n:"Caja fiesta",d:"4 docenas. Para 20 personas.",p:139000,it:rep("jq",24).concat(SURT,ESP),tag:"Despedidas de año",
      l:"Para despedidas de año, cumpleaños y reuniones grandes: dos docenas clásicas, una surtida y una especial."},
 
@@ -808,6 +820,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
   var cierre=Date.now()+((24+5)*3600+17*60)*1000;
   var $=function(id){return document.getElementById(id)};
   var plata=function(n){return "$"+n.toLocaleString("es-AR")};
+  function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
   function cant(id){return q[id]||0}
   function foto(i){return "img/"+(i.foto||(i.t==="g"?"foto-"+i.id+".jpg":"combo-"+i.id+".jpg"))}
   function suelto(lista){var t=0;lista.forEach(function(id){t+=POR_ID[id].p});return t}
@@ -835,10 +848,10 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
 
   function ficha(i){
     return '<div class="ficha" data-card="'+i.id+'"><button type="button" class="sumar" data-prod="'+i.id+'" aria-label="Ver '+i.n+'">'+
-      '<span class="arte"><img src="'+foto(i)+'" alt="" loading="lazy"></span><span class="txt"><h4>'+i.n+'</h4><span class="desc">'+i.d+'</span><span class="precio">'+plata(i.p)+'</span></span></button>'+
-      (i.e?'<span class="sello '+i.e+'">'+SELLO[i.e]+'</span>':'')+'<div class="pasos" data-pasos="'+i.id+'"></div></div>'}
+      '<span class="arte"><img src="'+foto(i)+'" alt="" loading="lazy"></span><span class="txt"><h4>'+i.n+'</h4><span class="desc">'+i.d+'</span><span class="precio">'+(i.promo?'<s>'+plata(i.lista)+'</s> ':'')+plata(i.p)+'</span></span></button>'+
+      (i.promo?'<span class="sello promo">🔥 '+esc(i.promo.texto||"Promo")+' −'+i.promo.pct+'%</span>':i.e?'<span class="sello '+i.e+'">'+SELLO[i.e]+'</span>':'')+'<div class="pasos" data-pasos="'+i.id+'"></div></div>'}
   function fila(i){var b=brutoDe(i),pct=Math.round(100*(b-i.p)/b);
-    var tag=(i.t==="c"||b>i.p)?'<span class="tag'+(i.tag?'':' ahorro')+'">'+(i.tag||'Ahorrás '+pct+'%')+'</span>':'';
+    var tag=i.promo?'<span class="tag promo">🔥 '+esc(i.promo.texto||"Promo")+' · ahorrás '+pct+'%</span>':(i.t==="c"||b>i.p)?'<span class="tag'+(i.tag?'':' ahorro')+'">'+(i.tag||'Ahorrás '+pct+'%')+'</span>':'';
     return '<div class="combo" data-card="'+i.id+'"><button type="button" class="abre" data-prod="'+i.id+'" aria-label="Ver '+i.n+'">'+
       '<img class="combo-foto" src="'+foto(i)+'" alt="" loading="lazy"><span class="abre-txt">'+tag+'<h4>'+i.n+'</h4><p>'+i.d+'</p>'+
       '<span class="precio">'+(b>i.p?'<s>'+plata(b)+'</s>':'')+plata(i.p)+'</span></span></button><div class="pasos" data-pasos="'+i.id+'"></div></div>'}
@@ -847,8 +860,13 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     $("lista-clasicos").innerHTML=de("clasicos").map(ficha).join("");
     $("lista-especiales").innerHTML=de("especiales").map(ficha).join("");
     var c=de("combos");
-    $("lista-combos").innerHTML=c.filter(function(i){return !i.ev}).map(fila).join("")+
-      '<h3 class="subt">Para fechas especiales</h3>'+c.filter(function(i){return i.ev}).map(fila).join("");
+    var fe=c.filter(function(i){return i.ev});
+    $("lista-combos").innerHTML=(fe.length?'<h3 class="subt">🎄 Para las fiestas</h3>'+fe.map(fila).join("")+'<h3 class="subt">Todo el año</h3>':"")+c.filter(function(i){return !i.ev}).map(fila).join("");
+    /* promociones: su propia pestaña, primera, solo si hay alguna */
+    var pr=ITEMS.filter(function(i){return i.promo}),bp=document.querySelector('[data-tab="promos"]');
+    if(bp){bp.hidden=!pr.length;$("lista-promos").innerHTML=pr.filter(function(i){return i.t==="g"}).length?'<div class="fichas">'+pr.filter(function(i){return i.t==="g"}).map(ficha).join("")+'</div>':"";
+      $("lista-promos").innerHTML+='<div class="combos" style="margin-top:12px">'+pr.filter(function(i){return i.t!=="g"}).map(fila).join("")+'</div>';
+      if(!pr.length&&bp.getAttribute("aria-selected")==="true")document.querySelector('[data-tab="clasicos"]').click()}
     $("lista-picadas").innerHTML=de("picadas").map(fila).join("");
     var h="",g="";de("bebidas").forEach(function(i){if(i.gr!==g){g=i.gr;h+='<h3 class="subt">'+g+'</h3>'}h+=fila(i)});
     $("lista-bebidas").innerHTML=h;
@@ -915,7 +933,8 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     $("prod-foto").src=foto(i);$("prod-foto").alt=i.n;
     $("prod-sello").hidden=!(i.e||i.tag);$("prod-sello").textContent=i.e?SELLO[i.e]:(i.tag||"");
     $("prod-nombre").textContent=i.n;
-    $("prod-precio").innerHTML=(b>i.p?"<s>"+plata(b)+"</s>":"")+plata(i.p)+(b>i.p?' <em>Ahorrás '+plata(b-i.p)+'</em>':'');
+    $("prod-precio").innerHTML=(b>i.p?"<s>"+plata(b)+"</s>":i.promo?"<s>"+plata(i.lista)+"</s>":"")+plata(i.p)+(b>i.p?' <em>Ahorrás '+plata(b-i.p)+'</em>':i.promo?' <em>Ahorrás '+plata(i.lista-i.p)+'</em>':'');
+    if(i.promo){$("prod-sello").hidden=false;$("prod-sello").textContent="🔥 "+(i.promo.texto||"Promo")+" −"+i.promo.pct+"%"+(i.promo.hasta?" · hasta el "+(+i.promo.hasta.slice(8))+"/"+(+i.promo.hasta.slice(5,7)):"")}
     $("prod-desc").textContent=i.l;
     var tr="";
     if(i.t==="c"){var vistos={};i.it.forEach(function(g){vistos[g]=(vistos[g]||0)+1});
@@ -1002,9 +1021,13 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     var mio=DIAS.filter(function(d){return d.id===diaSel&&libre(d)})[0]||DIAS.filter(libre)[0]||DIAS[0];diaSel=mio.id;return true}
   function cargarDias(){return pedir("rpc/dias_disponibles",{}).then(function(f){if(ponerDias(f)){pintarDias();refrescar()}})}
   function cargar(){if(!BASE)return;cargando=true;pintarDias();refrescar();
-    Promise.all([pedir("productos?select=id,precio,activo"),pedir("rpc/dias_disponibles",{}),pedir("ajustes?select=clave,valor")]).then(function(r){
+    Promise.all([pedir("productos?select=id,precio,activo,promo_pct,promo_hasta,promo_texto"),pedir("rpc/dias_disponibles",{}),pedir("ajustes?select=clave,valor")]).then(function(r){
       var p={},a={};r[0].forEach(function(x){p[x.id]=x});r[2].forEach(function(x){a[x.clave]=x.valor});
-      ITEMS=ITEMS.filter(function(i){var x=p[i.id];if(!x||!x.activo){delete q[i.id];return false}i.p=x.precio;return true});
+      var hoyAR=new Date().toLocaleDateString("en-CA",{timeZone:"America/Argentina/Buenos_Aires"});
+      ITEMS=ITEMS.filter(function(i){var x=p[i.id];if(!x||!x.activo){delete q[i.id];return false}
+        i.lista=x.precio;i.p=x.precio;i.promo=null;
+        if(x.promo_pct&&(!x.promo_hasta||x.promo_hasta>=hoyAR)){i.p=Math.round(x.precio*(100-x.promo_pct)/100/100)*100;i.promo={pct:x.promo_pct,texto:x.promo_texto||"",hasta:x.promo_hasta};if(i.t!=="c")i.b=Math.max(i.b||0,x.precio)}
+        return true});
       if(a.minimo_sandwiches>0)MINIMO=a.minimo_sandwiches;if(a.anticipacion_dias>=0)ANTES=a.anticipacion_dias;
       if(a.descuento_sueltos&&a.descuento_sueltos.length!==undefined)ESCALA=a.descuento_sueltos;
       if(typeof a.whatsapp==="string")WHATSAPP=a.whatsapp.replace(/\D/g,"");

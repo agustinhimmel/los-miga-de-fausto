@@ -602,6 +602,7 @@ details .dos{margin-top:8px}
 .switch input:checked + i{background:var(--verde)}
 .switch input:checked + i::after{transform:translateX(18px)}
 .subtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.promo-activa{background:var(--rojo-suave);color:var(--rojo);border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 8px}
 .g-nota{font-size:12px;color:var(--tinta2);margin:8px 0 0}
 .ayuda summary{cursor:pointer;font-size:15px}
 .ayuda .lista-alertas li{align-items:flex-start}
@@ -763,6 +764,7 @@ details .dos{margin-top:8px}
   function necesita(p){var a={};(receta[p.id]||[]).forEach(function(x){crudo(x.insumo_id,+x.cantidad,a)});return a}
   function alcanza(p){var n=necesita(p),min=Infinity,lim=null;Object.keys(n).forEach(function(k){var s=Math.max(0,+porId[k].stock)/n[k];if(s<min){min=s;lim=porId[k]}});
     return {armadas:isFinite(min)?Math.floor(min):0,limite:lim}}
+  function promoVigente(p){if(!p||!p.promo_pct)return null;if(p.promo_hasta&&p.promo_hasta<M.hoy())return null;return Math.round(p.precio*(100-p.promo_pct)/100/100)*100}
   function margen(p){var c=costoProd(p);return c==null||!p.precio?null:(p.precio-c)/p.precio}
   function pillMargen(m){return m==null?'<span class="pill gris">sin costo</span>':'<span class="pill '+(m>=.55?"bien":m>=.4?"medio":"mal")+'">'+pct(m)+'</span>'}
 
@@ -863,10 +865,10 @@ details .dos{margin-top:8px}
     if(!est.prod){var con=ps.filter(function(p){return margen(p)!=null}),prom=con.length?con.reduce(function(a,p){return a+margen(p)},0)/con.length:null;
       var h='<div class="g-titulo"><div><h2>Productos</h2><p class="chica">Tocá uno para ver su ficha: precio, costo, de qué está hecho y cuánto deja.</p></div></div><div class="kpis">'+
         kpi("Productos activos",ps.filter(function(p){return p.activo}).length,"de "+ps.length+" cargados")+kpi("Margen promedio",pct(prom),"de los que tienen costo")+
-        kpi("Sin costo cargado",ps.filter(function(p){return costoProd(p)==null}).length,"sobre todo picadas y bebidas")+'</div>';
+        kpi("Sin costo cargado",ps.filter(function(p){return costoProd(p)==null}).length,"sobre todo picadas y bebidas")+kpi("Promos activas",ps.filter(function(p){return p.activo&&promoVigente(p)}).length,"con descuento hoy")+'</div>';
       CATS.forEach(function(c){var l=ps.filter(function(p){return p.pestana===c});if(!l.length)return;
         h+='<div class="tarjeta"><h2>'+CAT[c]+'</h2><div class="rueda"><table class="tabla"><tr><th>Producto</th><th class="num">Precio</th><th class="num">Costo</th><th class="num">Deja</th><th class="num">Margen</th><th class="num">Vendidos</th><th class="num">A la venta</th></tr>'+
-          l.map(function(p){var co=costoProd(p),m=margen(p);return '<tr class="fila-clic'+(p.activo?"":" apagado")+'" data-prodficha="'+esc(p.id)+'"><td><b>'+esc(p.nombre)+'</b></td><td class="num c-precio">'+plata(p.precio)+'</td><td class="num'+(co==null?"":" c-costo")+'">'+(co==null?"—":plata(co))+
+          l.map(function(p){var co=costoProd(p),m=margen(p),pv=promoVigente(p);return '<tr class="fila-clic'+(p.activo?"":" apagado")+'" data-prodficha="'+esc(p.id)+'"><td><b>'+esc(p.nombre)+'</b>'+(pv?' <span class="pill mal">🔥 −'+p.promo_pct+'%</span>':"")+'</td><td class="num c-precio">'+plata(p.precio)+'</td><td class="num'+(co==null?"":" c-costo")+'">'+(co==null?"—":plata(co))+
             '</td><td class="num'+(co==null?"":" c-deja")+'">'+(co==null?"—":plata(p.precio-co))+'</td><td class="num">'+pillMargen(m)+'</td><td class="num">'+vendidos(p.id)+'</td><td class="num"><span class="pill '+(p.activo?"bien":"gris")+'">'+(p.activo?"Sí":"No")+'</span></td></tr>'}).join("")+'</table></div></div>'});
       el.innerHTML=h;return}
     var p=M.datos().productos[est.prod],co=costoProd(p),m=margen(p),esGusto=p.tipo==="gusto",h2='<button type="button" class="volver-g" data-prodficha="">← Todos los productos</button>'+
@@ -877,6 +879,15 @@ details .dos{margin-top:8px}
     /* precio */
     h2+='<div class="tarjeta"><h2>Precio</h2><form class="g-form" data-precio="'+esc(p.id)+'" style="grid-template-columns:minmax(0,1fr) auto"><div class="campo"><label for="g-precio">Precio de venta ($)</label><input class="g-in" id="g-precio" name="precio" inputmode="numeric" value="'+p.precio+'" required></div><button class="boton" type="submit">Guardar precio</button></form>'+
       (co!=null?'<p class="g-nota">Precio sugerido según cuánto querés que te deje:</p><div class="g-acc" style="margin-top:8px">'+[.5,.6,.65,.7].map(function(o){var s=Math.ceil(co/(1-o)/50)*50;return '<button type="button" class="mini" data-sugerido="'+s+'">'+pct(o)+": "+plata(s)+'</button>'}).join("")+'</div><p class="g-nota">Al guardar, el precio cambia en la tienda al instante.</p>':'<p class="g-nota">Cuando cargues el costo, acá te sugiero precios según el margen que busques.</p>')+'</div>';
+    /* promoción */
+    var pv=promoVigente(p);
+    h2+='<div class="tarjeta"><h2>🔥 Promoción</h2>'+(pv?'<p class="promo-activa">Activa: −'+p.promo_pct+'% → se cobra <b>'+plata(pv)+'</b> en vez de '+plata(p.precio)+(p.promo_hasta?' · hasta el '+M.fechaCorta(p.promo_hasta):' · sin fecha de fin')+'</p>':
+      p.promo_pct?'<p class="chica">La promo venció el '+M.fechaCorta(p.promo_hasta)+'.</p>':'<p class="chica">Poné un descuento y aparece en la tienda con el precio tachado y en la pestaña 🔥 Promos.</p>')+
+      '<form class="g-form" data-promo="'+esc(p.id)+'" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="campo"><label>Descuento (%)</label><input class="g-in" name="pct" inputmode="numeric" placeholder="Ej: 15" value="'+(p.promo_pct||"")+'"></div>'+
+      '<div class="campo"><label>Hasta (opcional)</label><input class="g-in" name="hasta" type="date" value="'+(p.promo_hasta||"")+'"></div>'+
+      '<div class="campo ancho"><label>Etiqueta (opcional)</label><input class="g-in" name="texto" maxlength="24" placeholder="Ej: Navidad" value="'+esc(p.promo_texto||"")+'"></div>'+
+      '<div class="g-acc"><button class="boton" type="submit">Guardar promo</button>'+(p.promo_pct?'<button type="button" class="mini rojo" data-sinpromo="'+esc(p.id)+'">Quitar promo</button>':"")+'</div></form>'+
+      (co!=null?'<p class="g-nota" id="promo-calc">Con la promo te deja '+plata((pv||p.precio)-co)+' por venta.</p>':"")+'</div>';
     /* de dónde sale el costo */
     if(p.tipo==="combo"){var cont=M.datos().contenido[p.id]||[],sueltos=0;cont.forEach(function(c){sueltos+=(M.datos().productos[c.gusto_id]||{precio:0}).precio*c.cantidad});
       h2+='<div class="tarjeta"><h2>Qué trae</h2><table class="tabla"><tr><th>Gusto</th><th class="num">Cantidad</th><th class="num">Costo</th></tr>'+cont.map(function(c){var g=M.datos().productos[c.gusto_id],cg=costoProd(g);
@@ -1098,6 +1109,7 @@ details .dos{margin-top:8px}
     if((x=t.closest("[data-rk]"))){est.rk=x.dataset.rk;pintar();return}
     if((x=t.closest("[data-rkpor]"))){est.rkPor=x.dataset.rkpor;pintar();return}
     if((x=t.closest("[data-copiarcal]"))){try{navigator.clipboard.writeText(x.dataset.copiarcal).then(function(){x.textContent="¡Copiado!"})}catch(er){}return}
+    if((x=t.closest("[data-sinpromo]"))){M.llamar("productos?id=eq."+encodeURIComponent(x.dataset.sinpromo),{metodo:"PATCH",cuerpo:{promo_pct:null,promo_hasta:null,promo_texto:null}}).then(recargar,fallo);return}
     if((x=t.closest("[data-sugerido]"))){$("g-precio").value=x.dataset.sugerido;$("g-precio").focus();return}
     if((x=t.closest("[data-quitar]"))){if(!confirm("¿Quitar este ingrediente?"))return;
       var c=x.dataset.quitar==="receta"?"producto_receta?producto_id=eq."+encodeURIComponent(x.dataset.dueno)+"&insumo_id=eq."+x.dataset.ins:"insumo_formula?preparacion_id=eq."+x.dataset.dueno+"&insumo_id=eq."+x.dataset.ins;
@@ -1120,6 +1132,8 @@ details .dos{margin-top:8px}
     if(f.dataset.ajuste==="pago"){var cbu=String(d.get("cbu")||"").replace(/\D/g,"");if(cbu&&cbu.length!==22){alert("El CBU o CVU tiene que tener 22 números.");return}if(b)b.disabled=true;
       Promise.all([["pago_alias",String(d.get("alias")||"").trim()],["pago_cbu",cbu],["pago_titular",String(d.get("titular")||"").trim()],["pago_banco",String(d.get("banco")||"").trim()]].map(function(x){
         return M.llamar("ajustes?clave=eq."+x[0],{metodo:"PATCH",cuerpo:{valor:x[1]}})})).then(function(){aj.__ok=0;forzar=true;M.pintar()},mal);return}
+    if(f.dataset.promo){var pc=Math.round(numSimple(d.get("pct")));if(!(pc>=1&&pc<=90)){alert("Poné un descuento entre 1 y 90 %.");return}if(b)b.disabled=true;
+      M.llamar("productos?id=eq."+encodeURIComponent(f.dataset.promo),{metodo:"PATCH",cuerpo:{promo_pct:pc,promo_hasta:d.get("hasta")||null,promo_texto:String(d.get("texto")||"").trim()||null,actualizado:new Date().toISOString()}}).then(recargar,mal);return}
     if(f.dataset.precio){var p=Math.round(num(d.get("precio")));if(!(p>0)){alert("Poné un precio válido.");return}if(b)b.disabled=true;
       M.llamar("productos?id=eq."+encodeURIComponent(f.dataset.precio),{metodo:"PATCH",cuerpo:{precio:p,actualizado:new Date().toISOString()}}).then(recargar,mal);return}
     if(f.dataset.rinde){var r=Math.round(numSimple(d.get("rinde")));if(!(r>0)){alert("Poné cuántos sándwiches salen.");return}
