@@ -872,7 +872,7 @@ button,.dia,.ficha .sumar,.combo .abre{cursor:pointer}
     $("lista-bebidas").innerHTML=h;
   }
   function pintarDias(){var h="";
-    if(BASE&&!conectada){$("dias").innerHTML='<p class="chica">'+(cargando?"Buscando los lugares…":"No pudimos cargar los días. Revisá tu conexión y recargá la página.")+"</p>";$("reloj").textContent="";return}
+    if(BASE&&!conectada){$("dias").innerHTML='<p class="chica">'+(cargando?"Buscando los lugares…":"No pudimos cargar los días. Recargá la página; si sigue, probá desde el celular u otro navegador (a veces un antivirus o un bloqueador de anuncios lo frena).")+"</p>";$("reloj").textContent="";return}
     DIAS.forEach(function(x){var s=estado(x);
       h+='<button type="button" class="dia '+s.k+'" data-dia="'+x.id+'" aria-pressed="'+(x.id===diaSel)+'"'+(s.q===0?" disabled":"")+'><b>'+(x.f?"<i>"+x.f+"</i>":"")+x.c+'</b>'+(x.cupo==null?'':'<span class="medidor"><i style="width:'+Math.round(100*x.tom/x.cupo)+'%"></i></span>')+'<small>'+s.t+'</small></button>'});
     $("dias").innerHTML=h; reloj()}

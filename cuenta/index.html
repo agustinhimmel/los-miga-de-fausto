@@ -458,7 +458,8 @@ details .dos{margin-top:8px}
     var h={apikey:BASE.clave,"Content-Type":"application/json"};if(conSesion)h.Authorization="Bearer "+S.a;
     return fetch(BASE.url+"/auth/v1/"+camino,{method:metodo||"POST",headers:h,body:JSON.stringify(cuerpo)})
       .then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok){var e=new Error("no");e.estado=r.status;e.codigo=j.error_code||j.code||"";throw e}return j})})}
-  function porque(e,otro){return !e.estado?"No pudimos conectar. Revisá tu conexión.":e.estado===429||e.codigo==="over_email_send_rate_limit"?"Se hicieron muchos intentos seguidos. Esperá unos minutos y probá de nuevo.":otro}
+  var SIN_RED="No pudimos comunicarnos con el sistema. Si tenés internet, algo en esta compu lo está bloqueando (un antivirus, un bloqueador de anuncios o la red del trabajo). Probá desde el celular o desde otro navegador.";
+  function porque(e,otro){return !e.estado?SIN_RED:e.estado===429||e.codigo==="over_email_send_rate_limit"?"Se hicieron muchos intentos seguidos. Esperá unos minutos y probá de nuevo.":otro}
   /* la contraseña se revisa mientras se escribe: qué le falta, qué tan segura es y si las dos coinciden */
   function revisarClave(){var eligiendo=modoActual==="crear"||modoActual==="nueva",v=$("clave").value,v2=$("clave2").value;
     var largo=v.length>=8,letra=/[a-zA-ZñÑáéíóúÁÉÍÓÚ]/.test(v),num=/\d/.test(v),ok=largo&&letra&&num;
